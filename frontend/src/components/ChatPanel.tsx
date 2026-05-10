@@ -44,9 +44,12 @@ export function ChatPanel({ datasetId }: ChatPanelProps) {
   }
 
   return (
-    <section className="rounded border border-slate-200 bg-white p-4">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div>
-        <h2 className="text-lg font-semibold text-slate-950">Ask a question</h2>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
+          Conversational analytics
+        </p>
+        <h2 className="mt-1 text-lg font-semibold text-slate-950">Ask a question</h2>
         <p className="mt-1 text-sm text-slate-600">
           Dataset ID: <span className="font-medium text-slate-800">{datasetId}</span>
         </p>
@@ -54,10 +57,10 @@ export function ChatPanel({ datasetId }: ChatPanelProps) {
 
       <div className="mt-4">
         <h3 className="text-sm font-medium text-slate-800">Suggested Hotel Booking questions</h3>
-        <div className="mt-2 flex flex-col gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           {SUGGESTED_QUESTIONS.map((suggestedQuestion) => (
             <button
-              className="rounded border border-slate-300 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 hover:border-teal-600 hover:bg-teal-50"
+              className="rounded-full border border-slate-300 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 shadow-sm hover:border-teal-600 hover:bg-teal-50"
               key={suggestedQuestion}
               onClick={() => {
                 setQuestion(suggestedQuestion);
@@ -76,14 +79,14 @@ export function ChatPanel({ datasetId }: ChatPanelProps) {
           Question
         </label>
         <textarea
-          className="min-h-24 w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-teal-700 focus:outline-none focus:ring-1 focus:ring-teal-700"
+          className="min-h-24 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-teal-700 focus:outline-none focus:ring-1 focus:ring-teal-700"
           id="chat-question"
           onChange={(event) => setQuestion(event.target.value)}
           placeholder="Ask about cancellations, source markets, lead time, ADR, or repeat guests."
           value={question}
         />
         <button
-          className="inline-flex min-h-10 items-center justify-center rounded bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="inline-flex min-h-10 items-center justify-center rounded-xl bg-teal-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           disabled={isSending}
           type="submit"
         >
@@ -92,13 +95,13 @@ export function ChatPanel({ datasetId }: ChatPanelProps) {
       </form>
 
       {error ? (
-        <div className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
           {error}
         </div>
       ) : null}
 
       {answer ? (
-        <article className="mt-4 rounded border border-teal-200 bg-teal-50 p-4">
+        <article className="mt-4 rounded-2xl border border-teal-200 bg-teal-50 p-4 shadow-sm">
           <h3 className="text-sm font-semibold text-teal-950">Answer</h3>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-900">{answer}</p>
         </article>

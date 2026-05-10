@@ -168,7 +168,7 @@ describe("ProfileSummary", () => {
 
     render(<ProfileSummary columns={[columnWithNullStats]} rowCount={200} />);
 
-    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("\u2014").length).toBeGreaterThan(0);
   });
 
   it("displays unique value count in table", () => {

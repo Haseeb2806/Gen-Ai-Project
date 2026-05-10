@@ -27,16 +27,19 @@ export function ExecutiveSummary({ datasetId }: ExecutiveSummaryProps) {
   }
 
   return (
-    <section className="rounded border border-slate-200 bg-white p-4">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-slate-950">Executive Summary</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
+            Narrative insight
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-slate-950">Executive Summary</h2>
           <p className="mt-1 text-sm text-slate-600">
             Generate a data-grounded summary from the saved dataset.
           </p>
         </div>
         <button
-          className="inline-flex min-h-10 items-center justify-center rounded bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="inline-flex min-h-10 items-center justify-center rounded-xl bg-teal-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           disabled={isLoading}
           onClick={handleGenerate}
           type="button"
@@ -46,13 +49,13 @@ export function ExecutiveSummary({ datasetId }: ExecutiveSummaryProps) {
       </div>
 
       {error ? (
-        <div className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
           {error}
         </div>
       ) : null}
 
       {summary ? (
-        <article className="mt-4 space-y-4 rounded border border-teal-200 bg-teal-50 p-4">
+        <article className="mt-4 space-y-4 rounded-2xl border border-teal-200 bg-teal-50 p-5 shadow-sm">
           <p className="text-sm leading-6 text-slate-900">{summary.summary}</p>
 
           {summary.key_findings.length > 0 ? (

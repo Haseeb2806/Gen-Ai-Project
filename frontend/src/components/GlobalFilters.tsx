@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
 import { ColumnProfile } from "../api";
 
 export interface FilterState {
@@ -11,7 +12,6 @@ interface GlobalFiltersProps {
   onFilterChange: (filters: FilterState) => void;
 }
 
-// Hotel Booking dataset preferred filter columns
 const HOTEL_BOOKING_FILTERS = [
   "hotel",
   "arrival_date_year",
@@ -23,46 +23,7 @@ const HOTEL_BOOKING_FILTERS = [
 ];
 
 export function GlobalFilters({ columns, filters, onFilterChange }: GlobalFiltersProps) {
-  // Get categorical columns suitable for filtering
-  // Prioritize Hotel Booking columns if they exist
-  const getCategoricalColumnsForFilters = () => {
-    const categoricalCols = columns.filter(
-      (col) =>
-        col.detected_type === "categorical" &&
-        col.top_values &&
-        col.top_values.length > 0 &&
-        col.unique_value_count <= 100 // Reasonable threshold
-    );
-
-    // Check if this is Hotel Booking dataset (has hotel column)
-    const hasHotelColumn = categoricalCols.some((col) => col.name === "hotel");
-
-    if (hasHotelColumn) {
-      // For Hotel Booking, prioritize HOTEL_BOOKING_FILTERS
-      const prioritized = categoricalCols.sort((a, b) => {
-        const aIndex = HOTEL_BOOKING_FILTERS.indexOf(a.name);
-        const bIndex = HOTEL_BOOKING_FILTERS.indexOf(b.name);
-
-        // If both in priority list or both not, maintain original order
-        if ((aIndex >= 0 && bIndex >= 0) || (aIndex === -1 && bIndex === -1)) {
-          return categoricalCols.indexOf(a) - categoricalCols.indexOf(b);
-        }
-
-        // If only a is in priority list, it comes first
-        if (aIndex >= 0) return -1;
-        // Otherwise b is in priority list, it comes first
-        return 1;
-      });
-
-      // Return at most 6 columns for display
-      return prioritized.slice(0, 6);
-    }
-
-    // For generic CSV, return first 6 categorical columns
-    return categoricalCols.slice(0, 6);
-  };
-
-  const filterableColumns = getCategoricalColumnsForFilters();
+  const filterableColumns = getCategoricalColumnsForFilters(columns);
 
   if (filterableColumns.length === 0) {
     return null;
@@ -80,25 +41,24 @@ export function GlobalFilters({ columns, filters, onFilterChange }: GlobalFilter
     });
   };
 
-  const handleClearFilters = () => {
-    onFilterChange({});
-  };
-
   const hasActiveFilters = Object.values(filters).some((values) => values.length > 0);
 
   return (
-    <div className="mt-6 rounded border border-slate-200 bg-slate-50 p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-900">Global Filters</h3>
-        {hasActiveFilters && (
+    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Controls</p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-950">Global Filters</h3>
+        </div>
+        {hasActiveFilters ? (
           <button
-            className="text-sm font-medium text-teal-700 hover:text-teal-800"
-            onClick={handleClearFilters}
+            className="w-fit rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-sm font-medium text-teal-800 hover:bg-teal-100"
+            onClick={() => onFilterChange({})}
             type="button"
           >
             Clear filters
           </button>
-        )}
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -111,8 +71,51 @@ export function GlobalFilters({ columns, filters, onFilterChange }: GlobalFilter
           />
         ))}
       </div>
-    </div>
+
+      {hasActiveFilters ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {Object.entries(filters).flatMap(([columnName, values]) =>
+            values.map((value) => (
+              <span
+                className="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white"
+                key={`${columnName}-${value}`}
+              >
+                {columnName}: {value}
+              </span>
+            )),
+          )}
+        </div>
+      ) : null}
+    </section>
   );
+}
+
+function getCategoricalColumnsForFilters(columns: ColumnProfile[]) {
+  const categoricalCols = columns.filter(
+    (col) =>
+      col.detected_type === "categorical" &&
+      col.top_values &&
+      col.top_values.length > 0 &&
+      col.unique_value_count <= 100,
+  );
+  const hasHotelColumn = categoricalCols.some((col) => col.name === "hotel");
+
+  if (hasHotelColumn) {
+    return categoricalCols
+      .sort((a, b) => {
+        const aIndex = HOTEL_BOOKING_FILTERS.indexOf(a.name);
+        const bIndex = HOTEL_BOOKING_FILTERS.indexOf(b.name);
+
+        if ((aIndex >= 0 && bIndex >= 0) || (aIndex === -1 && bIndex === -1)) {
+          return categoricalCols.indexOf(a) - categoricalCols.indexOf(b);
+        }
+
+        return aIndex >= 0 ? -1 : 1;
+      })
+      .slice(0, 6);
+  }
+
+  return categoricalCols.slice(0, 6);
 }
 
 interface FilterDropdownProps {
@@ -123,48 +126,48 @@ interface FilterDropdownProps {
 
 function FilterDropdown({ column, selectedValues, onToggleValue }: FilterDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-
   const topValues = column.top_values || [];
-  const displayLimit = 10; // Show top 10 values
+  const displayLimit = 10;
+  const buttonText =
+    selectedValues.length > 0 ? `${column.name} (${selectedValues.length})` : column.name;
 
   return (
     <div className="relative">
       <button
-        className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-left text-sm font-medium text-slate-900 hover:border-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-0"
+        className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-left text-sm font-medium text-slate-900 shadow-sm hover:border-teal-400 hover:bg-white focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-0"
         onClick={() => setIsOpen(!isOpen)}
         type="button"
       >
         <div className="flex items-center justify-between">
-          <span className="truncate">
-            {selectedValues.length > 0 ? `${column.name} (${selectedValues.length})` : column.name}
+          <span className="truncate">{buttonText}</span>
+          <span className={`ml-2 text-xs text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`}>
+            ▼
           </span>
-          <span className={`ml-2 transition-transform ${isOpen ? "rotate-180" : ""}`}>▼</span>
         </div>
       </button>
 
-      {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-64 overflow-y-auto rounded border border-slate-300 bg-white shadow-lg">
+      {isOpen ? (
+        <div className="absolute left-0 right-0 top-full z-10 mt-2 max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
           <div className="space-y-1 p-2">
             {topValues.slice(0, displayLimit).map(({ value }) => (
-              <label key={value} className="flex items-center space-x-2 px-2 py-1 hover:bg-slate-100">
+              <label key={value} className="flex items-center space-x-2 rounded-lg px-2 py-1.5 hover:bg-slate-100">
                 <input
                   checked={selectedValues.includes(value)}
-                  className="h-4 w-4 cursor-pointer rounded border-slate-300"
+                  className="h-4 w-4 cursor-pointer rounded border-slate-300 text-teal-700"
                   onChange={() => onToggleValue(value)}
                   type="checkbox"
                 />
                 <span className="text-sm text-slate-700">{value}</span>
               </label>
             ))}
-            {topValues.length > displayLimit && (
+            {topValues.length > displayLimit ? (
               <div className="px-2 py-1 text-xs text-slate-500">
                 +{topValues.length - displayLimit} more values
               </div>
-            )}
+            ) : null}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
-;
