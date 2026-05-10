@@ -5,6 +5,7 @@ import { ProfileSummary } from "./ProfileSummary";
 import { Dashboard } from "./Dashboard";
 import { GlobalFilters, FilterState } from "./GlobalFilters";
 import { ChatPanel } from "./ChatPanel";
+import { ExecutiveSummary } from "./ExecutiveSummary";
 
 export function UploadForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -93,6 +94,7 @@ export function UploadForm() {
             filters={filters}
             onFilterChange={setFilters}
           />
+          <ExecutiveSummary datasetId={uploadResult.dataset_id} />
           <ProfileSummary columns={uploadResult.profile.columns} rowCount={uploadResult.row_count} />
           <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} filters={filters} />
           <ChatPanel datasetId={uploadResult.dataset_id} />

@@ -38,6 +38,14 @@ export type ChatResponse = {
   data?: Record<string, unknown>;
 };
 
+export type SummaryResponse = {
+  dataset_id: string;
+  summary: string;
+  key_findings: string[];
+  data_quality_notes: string[];
+  data?: Record<string, unknown>;
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 export async function uploadCsv(file: File): Promise<UploadResponse> {
@@ -79,4 +87,25 @@ export async function sendChatQuestion(datasetId: string, question: string): Pro
   }
 
   return body as ChatResponse;
+}
+
+export async function generateExecutiveSummary(datasetId: string): Promise<SummaryResponse> {
+  const response = await fetch(`${API_BASE_URL}/summary`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      dataset_id: datasetId,
+    }),
+  });
+
+  const body = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail = body?.detail;
+    throw new Error(typeof detail === "string" ? detail : "Summary request failed. Please try again.");
+  }
+
+  return body as SummaryResponse;
 }
