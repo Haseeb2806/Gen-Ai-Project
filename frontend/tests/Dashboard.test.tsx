@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { Dashboard } from "../src/components/Dashboard";
-import { Profile } from "../src/lib/api";
+import { Profile } from "../src/api";
 
 describe("Dashboard", () => {
   const mockProfile: Profile = {

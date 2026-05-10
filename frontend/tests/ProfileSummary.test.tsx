@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { ProfileSummary } from "../src/components/ProfileSummary";
-import { ColumnProfile } from "../src/lib/api";
+import { ColumnProfile } from "../src/api";
 
 describe("ProfileSummary", () => {
   const numericColumn: ColumnProfile = {

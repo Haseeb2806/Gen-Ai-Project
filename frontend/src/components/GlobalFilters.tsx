@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ColumnProfile } from "../lib/api";
+import { ColumnProfile } from "../api";
 
 export interface FilterState {
   [columnName: string]: string[];

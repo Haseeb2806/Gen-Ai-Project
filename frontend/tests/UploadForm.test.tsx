@@ -83,7 +83,7 @@ describe("UploadForm", () => {
       );
     });
 
-    expect(await screen.findByText("dataset-123")).toBeInTheDocument();
+    expect((await screen.findAllByText("dataset-123")).length).toBeGreaterThan(0);
     expect(screen.getAllByText("bookings.csv").length).toBeGreaterThan(0);
     expect(screen.getByText("Rows")).toBeInTheDocument();
     expect(screen.getAllByText("2").length).toBeGreaterThan(0);

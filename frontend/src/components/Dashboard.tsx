@@ -1,4 +1,4 @@
-import { Profile } from "../lib/api";
+import { Profile } from "../api";
 import { FilterState } from "./GlobalFilters";
 
 interface DashboardProps {

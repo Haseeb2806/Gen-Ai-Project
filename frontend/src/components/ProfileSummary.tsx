@@ -1,4 +1,4 @@
-import { ColumnProfile } from "../lib/api";
+import { ColumnProfile } from "../api";
 
 interface ProfileSummaryProps {
   columns: ColumnProfile[];

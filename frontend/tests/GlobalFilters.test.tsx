@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { GlobalFilters, FilterState } from "../src/components/GlobalFilters";
-import { ColumnProfile } from "../src/lib/api";
+import { ColumnProfile } from "../src/api";
 
 const mockCategoricalColumn: ColumnProfile = {
   name: "hotel",
