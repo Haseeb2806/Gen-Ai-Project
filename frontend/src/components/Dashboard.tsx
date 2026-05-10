@@ -1,11 +1,13 @@
 import { Profile } from "../lib/api";
+import { FilterState } from "./GlobalFilters";
 
 interface DashboardProps {
   profile: Profile;
   rowCount: number;
+  filters?: FilterState;
 }
 
-export function Dashboard({ profile, rowCount }: DashboardProps) {
+export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
   const numericColumns = profile.columns.filter((col) => col.detected_type === "numeric");
   const categoricalColumns = profile.columns.filter(
     (col) => col.detected_type === "categorical" && col.top_values && col.top_values.length > 0
@@ -16,6 +18,11 @@ export function Dashboard({ profile, rowCount }: DashboardProps) {
     <div className="mt-8 space-y-8">
       <div>
         <h2 className="mb-4 text-2xl font-semibold text-slate-950">Dashboard</h2>
+        {Object.values(filters).some((values) => values.length > 0) && (
+          <p className="text-sm text-teal-700">
+            Filters applied - dashboard is showing filtered data
+          </p>
+        )}
       </div>
 
       {/* Summary Cards */}

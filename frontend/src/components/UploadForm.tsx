@@ -3,12 +3,14 @@ import { FormEvent, useState } from "react";
 import { UploadResponse, uploadCsv } from "../lib/api";
 import { ProfileSummary } from "./ProfileSummary";
 import { Dashboard } from "./Dashboard";
+import { GlobalFilters, FilterState } from "./GlobalFilters";
 
 export function UploadForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadResult, setUploadResult] = useState<UploadResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({});
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,6 +49,7 @@ export function UploadForm() {
               setSelectedFile(event.target.files?.[0] ?? null);
               setError(null);
               setUploadResult(null);
+              setFilters({});
             }}
             type="file"
           />
@@ -84,8 +87,13 @@ export function UploadForm() {
               <SummaryItem label="Columns" value={uploadResult.column_count.toLocaleString()} />
             </dl>
           </div>
+          <GlobalFilters
+            columns={uploadResult.profile.columns}
+            filters={filters}
+            onFilterChange={setFilters}
+          />
           <ProfileSummary columns={uploadResult.profile.columns} rowCount={uploadResult.row_count} />
-          <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} />
+          <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} filters={filters} />
         </div>
       ) : null}
     </section>
