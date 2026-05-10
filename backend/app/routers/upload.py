@@ -5,6 +5,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from pandas.errors import EmptyDataError, ParserError
 
 from backend.app.db.storage import save_dataset
+from backend.app.services.cleaning import clean_and_profile
 from backend.app.services.profiling import profile_dataframe
 
 router = APIRouter()
@@ -41,13 +42,16 @@ async def upload_csv(file: UploadFile = File(...)) -> dict[str, object]:
             detail="CSV file could not be parsed by pandas.",
         ) from exc
 
-    dataset_id = save_dataset(file.filename, dataframe)
+    # Apply cleaning rules (Hotel Booking specific) and get cleaning log
+    cleaned_df, cleaning_log = clean_and_profile(dataframe)
+
+    dataset_id = save_dataset(file.filename, cleaned_df)
 
     return {
         "dataset_id": dataset_id,
         "filename": file.filename,
-        "row_count": int(len(dataframe)),
-        "column_count": int(len(dataframe.columns)),
-        "column_names": list(dataframe.columns),
-        "profile": profile_dataframe(dataframe),
+        "row_count": int(len(cleaned_df)),
+        "column_count": int(len(cleaned_df.columns)),
+        "column_names": list(cleaned_df.columns),
+        "profile": profile_dataframe(cleaned_df, cleaning_log),
     }

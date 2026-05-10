@@ -5,20 +5,38 @@ from typing import Any
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
 
+from backend.app.services.cleaning import filter_analytical_data, get_privacy_columns_for_hiding
+
 
 TOP_VALUE_LIMIT = 5
 
 
-def profile_dataframe(dataframe: pd.DataFrame) -> dict[str, Any]:
-    """Return a deterministic profile for a parsed CSV dataframe."""
-    row_count = int(len(dataframe))
-    columns = [_profile_column(dataframe[column], row_count) for column in dataframe.columns]
+def profile_dataframe(dataframe: pd.DataFrame, cleaning_log: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Return a deterministic profile for a parsed CSV dataframe.
 
-    return {
+    Args:
+        dataframe: Cleaned DataFrame to profile
+        cleaning_log: Optional cleaning log to include in profile
+
+    Returns:
+        Profile dictionary with columns, row count, and optional cleaning info
+    """
+    # For analytics, filter out zero-guest rows and privacy columns
+    analytical_df = filter_analytical_data(dataframe)
+
+    row_count = int(len(analytical_df))
+    columns = [_profile_column(analytical_df[column], row_count) for column in analytical_df.columns]
+
+    profile: dict[str, Any] = {
         "row_count": row_count,
-        "column_count": int(len(dataframe.columns)),
+        "column_count": int(len(analytical_df.columns)),
         "columns": columns,
     }
+
+    if cleaning_log:
+        profile["cleaning_log"] = cleaning_log
+
+    return profile
 
 
 def _profile_column(series: pd.Series, row_count: int) -> dict[str, Any]:
