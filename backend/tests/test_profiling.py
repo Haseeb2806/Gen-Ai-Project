@@ -60,7 +60,8 @@ def test_null_count_calculation() -> None:
     assert column["null_percentage"] == 50.0
 
 
-def test_profile_response_structure_after_upload() -> None:
+def test_profile_response_structure_after_upload(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("DATALENS_DB_PATH", str(tmp_path / "test.db"))
     client = TestClient(app)
 
     response = client.post(

@@ -4,6 +4,7 @@ import pandas as pd
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from pandas.errors import EmptyDataError, ParserError
 
+from backend.app.db.storage import save_dataset
 from backend.app.services.profiling import profile_dataframe
 
 router = APIRouter()
@@ -40,7 +41,10 @@ async def upload_csv(file: UploadFile = File(...)) -> dict[str, object]:
             detail="CSV file could not be parsed by pandas.",
         ) from exc
 
+    dataset_id = save_dataset(file.filename, dataframe)
+
     return {
+        "dataset_id": dataset_id,
         "filename": file.filename,
         "row_count": int(len(dataframe)),
         "column_count": int(len(dataframe.columns)),

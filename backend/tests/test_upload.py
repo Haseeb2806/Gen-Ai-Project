@@ -7,7 +7,9 @@ from backend.app.routers import upload
 client = TestClient(app)
 
 
-def test_valid_csv_upload_returns_dataset_summary() -> None:
+def test_valid_csv_upload_returns_dataset_summary(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("DATALENS_DB_PATH", str(tmp_path / "test.db"))
+
     response = client.post(
         "/upload",
         files={"file": ("bookings.csv", b"hotel,is_canceled\nCity Hotel,1\nResort Hotel,0\n")},
@@ -15,6 +17,8 @@ def test_valid_csv_upload_returns_dataset_summary() -> None:
 
     assert response.status_code == 200
     body = response.json()
+    assert isinstance(body["dataset_id"], str)
+    assert body["dataset_id"]
     assert body["filename"] == "bookings.csv"
     assert body["row_count"] == 2
     assert body["column_count"] == 2
