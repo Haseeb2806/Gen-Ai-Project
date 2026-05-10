@@ -4,6 +4,8 @@ import pandas as pd
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from pandas.errors import EmptyDataError, ParserError
 
+from backend.app.services.profiling import profile_dataframe
+
 router = APIRouter()
 
 MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024
@@ -11,7 +13,7 @@ MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024
 
 @router.post("/upload")
 async def upload_csv(file: UploadFile = File(...)) -> dict[str, object]:
-    """Validate an uploaded CSV and return a minimal dataset summary."""
+    """Validate an uploaded CSV and return a dataset summary with a column profile."""
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -43,4 +45,5 @@ async def upload_csv(file: UploadFile = File(...)) -> dict[str, object]:
         "row_count": int(len(dataframe)),
         "column_count": int(len(dataframe.columns)),
         "column_names": list(dataframe.columns),
+        "profile": profile_dataframe(dataframe),
     }

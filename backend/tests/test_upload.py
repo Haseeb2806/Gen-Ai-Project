@@ -14,12 +14,13 @@ def test_valid_csv_upload_returns_dataset_summary() -> None:
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "filename": "bookings.csv",
-        "row_count": 2,
-        "column_count": 2,
-        "column_names": ["hotel", "is_canceled"],
-    }
+    body = response.json()
+    assert body["filename"] == "bookings.csv"
+    assert body["row_count"] == 2
+    assert body["column_count"] == 2
+    assert body["column_names"] == ["hotel", "is_canceled"]
+    assert body["profile"]["row_count"] == 2
+    assert body["profile"]["column_count"] == 2
 
 
 def test_upload_rejects_non_csv_file() -> None:
