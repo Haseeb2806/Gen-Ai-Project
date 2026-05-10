@@ -1,5 +1,6 @@
 import { Profile } from "../api";
 import { formatColumnLabel } from "../utils/columnLabels";
+import { buildDatasetIntelligence } from "../utils/datasetIntelligence";
 import { FilterState } from "./GlobalFilters";
 
 interface DashboardProps {
@@ -18,7 +19,7 @@ export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
   const totalCells = Math.max(rowCount * profile.column_count, 1);
   const dataQuality = ((totalCells - totalNulls) / totalCells) * 100;
   const activeFilterCount = Object.values(filters).reduce((sum, values) => sum + values.length, 0);
-  const hotelInsights = buildHotelInsights(profile, rowCount);
+  const intelligence = buildDatasetIntelligence(profile);
 
   return (
     <section className="mt-8 space-y-8">
@@ -28,9 +29,9 @@ export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
               Analytics workspace
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-950">Dashboard</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">{intelligence.title}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              A quick read on volume, quality, and the strongest patterns detected from the uploaded CSV.
+              {intelligence.description}
             </p>
           </div>
           {activeFilterCount > 0 ? (
@@ -41,54 +42,46 @@ export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <SummaryCard
-            accent="from-slate-900 to-slate-700"
-            label="Total Rows"
-            subtitle="Records available"
-            value={rowCount.toLocaleString()}
-          />
-          <SummaryCard
-            accent="from-cyan-700 to-teal-600"
-            label="Total Columns"
-            subtitle="Fields detected"
-            value={profile.column_count.toLocaleString()}
-          />
-          <SummaryCard
-            accent="from-amber-600 to-orange-500"
-            label="Missing Values"
-            subtitle="Blank cells found"
-            value={totalNulls.toLocaleString()}
-          />
-          <SummaryCard
-            accent="from-emerald-700 to-green-500"
-            label="Data Quality"
-            subtitle="Completeness score"
-            value={`${dataQuality.toFixed(1)}%`}
-          />
+          {intelligence.kpis.slice(0, 4).map((kpi) => (
+            <SummaryCard
+              accent={summaryAccent(kpi.tone)}
+              key={kpi.label}
+              label={kpi.label}
+              subtitle={kpi.subtitle}
+              value={kpi.value}
+            />
+          ))}
         </div>
       </div>
 
-      {hotelInsights.length > 0 ? (
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-950">Hotel Booking Insights</h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Business-focused signals inferred from Hotel Booking Demand columns.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {hotelInsights.map((insight) => (
-              <InsightCard key={insight.label} {...insight} />
-            ))}
-          </div>
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-950">Important Insights</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Automatically selected for the detected {intelligence.typeLabel} dataset.
+          </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {buildGenericInsights(profile).map((insight) => (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {intelligence.insights.map((insight) => (
             <InsightCard key={insight.label} {...insight} />
           ))}
         </div>
-      )}
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <SectionHeading
+          eyebrow="Recommendations"
+          title="Recommended Charts"
+          subtitle="Suggested views based on detected fields and dataset type."
+        />
+        <div className="mt-4 flex flex-wrap gap-2">
+          {intelligence.chartRecommendations.map((chart) => (
+            <span className="rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700" key={chart}>
+              {chart}
+            </span>
+          ))}
+        </div>
+      </div>
 
       {categoricalColumns.length > 0 && (
         <div className="space-y-4">
@@ -158,16 +151,29 @@ function SummaryCard({
   );
 }
 
+function summaryAccent(tone: "teal" | "blue" | "amber" | "rose" | "slate" = "slate") {
+  const accents = {
+    amber: "from-amber-600 to-orange-500",
+    blue: "from-blue-700 to-cyan-600",
+    rose: "from-rose-700 to-red-500",
+    slate: "from-slate-900 to-slate-700",
+    teal: "from-cyan-700 to-teal-600",
+  };
+  return accents[tone];
+}
+
 function InsightCard({
+  detail,
   label,
-  value,
   subtitle,
   tone = "teal",
+  value,
 }: {
+  detail?: string;
   label: string;
-  value: string;
-  subtitle: string;
+  subtitle?: string;
   tone?: "teal" | "slate" | "amber" | "rose" | "blue";
+  value: string;
 }) {
   const toneClasses = {
     amber: "border-amber-200 bg-amber-50 text-amber-900",
@@ -181,7 +187,7 @@ function InsightCard({
     <div className={`rounded-2xl border p-5 shadow-sm ${toneClasses[tone]}`}>
       <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-70">{label}</p>
       <p className="mt-3 text-2xl font-semibold">{value}</p>
-      <p className="mt-2 text-sm leading-6 opacity-80">{subtitle}</p>
+      <p className="mt-2 text-sm leading-6 opacity-80">{detail ?? subtitle}</p>
     </div>
   );
 }
@@ -383,116 +389,6 @@ function DataQualityChart({
   );
 }
 
-function buildHotelInsights(profile: Profile, rowCount: number) {
-  const columns = new Map(profile.columns.map((column) => [column.name.toLowerCase(), column]));
-  const hasHotelBookingSignals = columns.has("hotel") || columns.has("is_canceled") || columns.has("adr");
-  if (!hasHotelBookingSignals) return [];
-
-  const insights: Array<{
-    label: string;
-    value: string;
-    subtitle: string;
-    tone?: "teal" | "slate" | "amber" | "rose" | "blue";
-  }> = [];
-  const canceled = columns.get("is_canceled");
-  const hotel = columns.get("hotel");
-  const country = columns.get("country");
-  const leadTime = columns.get("lead_time");
-  const adr = columns.get("adr");
-
-  if (canceled?.stats?.mean !== null && canceled?.stats?.mean !== undefined) {
-    insights.push({
-      label: "Cancellation Rate",
-      value: `${(canceled.stats.mean * 100).toFixed(1)}%`,
-      subtitle: "Average cancellation outcome across uploaded bookings.",
-      tone: canceled.stats.mean > 0.35 ? "rose" : "teal",
-    });
-  }
-
-  if (hotel?.top_values?.length) {
-    const comparison = hotel.top_values
-      .slice(0, 2)
-      .map((item) => `${item.value}: ${item.count.toLocaleString()}`)
-      .join(" vs ");
-    insights.push({
-      label: "Hotel Mix",
-      value: comparison,
-      subtitle: "City Hotel vs Resort Hotel booking volume. Cancellation comparison needs row-level analysis.",
-      tone: "blue",
-    });
-  }
-
-  if (country?.top_values?.[0]) {
-    insights.push({
-      label: "Top Source Country",
-      value: country.top_values[0].value,
-      subtitle: `${country.top_values[0].count.toLocaleString()} bookings, ${((country.top_values[0].count / rowCount) * 100).toFixed(1)}% of rows.`,
-      tone: "slate",
-    });
-  }
-
-  if (leadTime?.stats?.mean !== null && leadTime?.stats?.mean !== undefined) {
-    insights.push({
-      label: "Average Lead Time",
-      value: `${leadTime.stats.mean.toFixed(0)} days`,
-      subtitle: "Mean days between booking and arrival.",
-      tone: "amber",
-    });
-  }
-
-  if (adr?.stats?.mean !== null && adr?.stats?.mean !== undefined) {
-    insights.push({
-      label: "Average ADR",
-      value: formatCurrency(adr.stats.mean),
-      subtitle: "Mean average daily rate from uploaded rows.",
-      tone: "teal",
-    });
-  }
-
-  const highMissing = profile.columns.find(
-    (column) => ["company", "agent"].includes(column.name.toLowerCase()) && column.null_percentage >= 20,
-  );
-  if (highMissing) {
-    insights.push({
-      label: "Data Quality Warning",
-      value: formatColumnLabel(highMissing.name),
-      subtitle: `${highMissing.null_percentage}% missing values. Review before using this field in decisions.`,
-      tone: "rose",
-    });
-  }
-
-  return insights;
-}
-
-function buildGenericInsights(profile: Profile) {
-  const numericCount = profile.columns.filter((column) => column.detected_type === "numeric").length;
-  const categoricalCount = profile.columns.filter((column) => column.detected_type === "categorical").length;
-  const highMissing = profile.columns.find((column) => column.null_percentage >= 20);
-
-  return [
-    {
-      label: "Numeric Fields",
-      value: numericCount.toString(),
-      subtitle: "Measures available for statistical review.",
-      tone: "teal" as const,
-    },
-    {
-      label: "Category Fields",
-      value: categoricalCount.toString(),
-      subtitle: "Dimensions available for segmentation.",
-      tone: "blue" as const,
-    },
-    {
-      label: "Quality Watch",
-      value: highMissing ? formatColumnLabel(highMissing.name) : "Clear",
-      subtitle: highMissing
-        ? `${highMissing.null_percentage}% missing values in this field.`
-        : "No column exceeds 20% missing values.",
-      tone: highMissing ? ("amber" as const) : ("slate" as const),
-    },
-  ];
-}
-
 function barColor(index: number) {
   return ["bg-teal-600", "bg-blue-600", "bg-amber-500", "bg-indigo-500", "bg-emerald-500"][
     index % 5
@@ -501,13 +397,6 @@ function barColor(index: number) {
 
 function formatNumber(value: number): string {
   return Number.isInteger(value) ? value.toLocaleString() : value.toFixed(2);
-}
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString(undefined, {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 0,
-  });
 }
 
 function isBinaryColumn(column: {

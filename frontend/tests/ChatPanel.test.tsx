@@ -73,6 +73,14 @@ describe("ChatPanel", () => {
     expect(screen.getByRole("button", { name: /repeat guest rates/i })).toBeInTheDocument();
   });
 
+  it("shows adaptive suggested questions for sales datasets", () => {
+    render(<ChatPanel datasetId="dataset-123" profile={salesProfile} />);
+
+    expect(screen.getByText("Suggested Retail / Sales questions")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /total weekly sales/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /holiday and non-holiday sales/i })).toBeInTheDocument();
+  });
+
   it("lets the user type and submit a question", async () => {
     const user = userEvent.setup();
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
@@ -154,6 +162,44 @@ describe("ChatPanel", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Could not answer this question");
   });
 });
+
+const salesProfile = {
+  row_count: 100,
+  column_count: 4,
+  columns: [
+    {
+      name: "Store",
+      detected_type: "categorical" as const,
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 3,
+      top_values: [{ value: "1", count: 40 }],
+    },
+    {
+      name: "Date",
+      detected_type: "datetime" as const,
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 100,
+    },
+    {
+      name: "Weekly_Sales",
+      detected_type: "numeric" as const,
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 100,
+      stats: { min: 1000, max: 5000, mean: 2500, median: 2400 },
+    },
+    {
+      name: "Holiday_Flag",
+      detected_type: "numeric" as const,
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 2,
+      stats: { min: 0, max: 1, mean: 0.1, median: 0 },
+    },
+  ],
+};
 
 async function uploadCsv(user: ReturnType<typeof userEvent.setup>) {
   const file = new File(["hotel,is_canceled\nCity Hotel,1\n"], "bookings.csv", {

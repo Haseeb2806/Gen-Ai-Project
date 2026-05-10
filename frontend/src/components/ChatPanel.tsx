@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 
-import { sendChatQuestion } from "../api";
+import { Profile, sendChatQuestion } from "../api";
+import { buildDatasetIntelligence } from "../utils/datasetIntelligence";
 
 const SUGGESTED_QUESTIONS = [
   "What is the overall cancellation rate and how does it differ between City Hotel and Resort Hotel?",
@@ -12,13 +13,16 @@ const SUGGESTED_QUESTIONS = [
 
 type ChatPanelProps = {
   datasetId: string;
+  profile?: Profile;
 };
 
-export function ChatPanel({ datasetId }: ChatPanelProps) {
+export function ChatPanel({ datasetId, profile }: ChatPanelProps) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const intelligence = profile ? buildDatasetIntelligence(profile) : null;
+  const suggestedQuestions = intelligence?.suggestedQuestions ?? SUGGESTED_QUESTIONS;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,9 +60,11 @@ export function ChatPanel({ datasetId }: ChatPanelProps) {
       </div>
 
       <div className="mt-4">
-        <h3 className="text-sm font-medium text-slate-800">Suggested Hotel Booking questions</h3>
+        <h3 className="text-sm font-medium text-slate-800">
+          Suggested {intelligence?.typeLabel ?? "Hotel Booking"} questions
+        </h3>
         <div className="mt-2 flex flex-wrap gap-2">
-          {SUGGESTED_QUESTIONS.map((suggestedQuestion) => (
+          {suggestedQuestions.map((suggestedQuestion) => (
             <button
               className="rounded-full border border-slate-300 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 shadow-sm hover:border-teal-600 hover:bg-teal-50"
               key={suggestedQuestion}
@@ -82,7 +88,7 @@ export function ChatPanel({ datasetId }: ChatPanelProps) {
           className="min-h-24 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-teal-700 focus:outline-none focus:ring-1 focus:ring-teal-700"
           id="chat-question"
           onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Ask about cancellations, source markets, lead time, ADR, or repeat guests."
+          placeholder={intelligence ? `Ask about ${intelligence.typeLabel.toLowerCase()} metrics, segments, quality, or trends.` : "Ask about cancellations, source markets, lead time, ADR, or repeat guests."}
           value={question}
         />
         <button

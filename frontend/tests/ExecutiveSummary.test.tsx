@@ -87,6 +87,15 @@ describe("ExecutiveSummary", () => {
       }),
     );
   });
+
+  it("shows detected dataset summary structure when profile is provided", () => {
+    render(<ExecutiveSummary datasetId="sales-123" filename="walmart.csv" profile={salesProfile} />);
+
+    expect(screen.getByText(/detected Retail \/ Sales dataset/i)).toBeInTheDocument();
+    expect(screen.getByText("Executive summary structure")).toBeInTheDocument();
+    expect(screen.getByText("Sales volume and average sales")).toBeInTheDocument();
+    expect(screen.getAllByText("Data quality notes").length).toBeGreaterThan(0);
+  });
 });
 
 function createSummaryResponse() {
@@ -130,6 +139,36 @@ const uploadResponse = {
       },
     ],
   },
+};
+
+const salesProfile = {
+  row_count: 100,
+  column_count: 3,
+  columns: [
+    {
+      name: "Store",
+      detected_type: "categorical" as const,
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 3,
+      top_values: [{ value: "1", count: 40 }],
+    },
+    {
+      name: "Weekly_Sales",
+      detected_type: "numeric" as const,
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 100,
+      stats: { min: 1000, max: 5000, mean: 2500, median: 2400 },
+    },
+    {
+      name: "Date",
+      detected_type: "datetime" as const,
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 100,
+    },
+  ],
 };
 
 async function uploadCsv(user: ReturnType<typeof userEvent.setup>) {

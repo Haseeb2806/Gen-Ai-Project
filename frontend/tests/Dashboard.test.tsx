@@ -71,17 +71,17 @@ describe("Dashboard", () => {
   it("renders the dashboard section", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Hotel Booking Analytics Workspace")).toBeInTheDocument();
   });
 
   it("displays summary cards", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Total Rows")).toBeInTheDocument();
+    expect(screen.getByText("Total Bookings")).toBeInTheDocument();
     expect(screen.getByText("1,000")).toBeInTheDocument();
-    expect(screen.getByText("Total Columns")).toBeInTheDocument();
-    expect(screen.getByText("5")).toBeInTheDocument();
-    expect(screen.getByText("Missing Values")).toBeInTheDocument();
+    expect(screen.getAllByText("Average Daily Rate").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Top Source Country").length).toBeGreaterThan(0);
+    expect(screen.getByText("Data Quality")).toBeInTheDocument();
   });
 
   it("displays categorical distributions section", () => {
@@ -162,7 +162,7 @@ describe("Dashboard", () => {
 
     expect(screen.getByText("Category Breakdown")).toBeInTheDocument();
     expect(screen.getAllByText("Color").length).toBeGreaterThan(0);
-    expect(screen.getByText("Red")).toBeInTheDocument();
+    expect(screen.getAllByText("Red").length).toBeGreaterThan(0);
   });
 
   it("handles profiles with only numeric columns", () => {
@@ -294,7 +294,6 @@ describe("Dashboard", () => {
   it("formats missing values correctly", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    // Total nulls = 0 + 0 + 50 + 0 + 5 = 55
-    expect(screen.getByText("55")).toBeInTheDocument();
+    expect(screen.getByText("Column Completeness")).toBeInTheDocument();
   });
 });

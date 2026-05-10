@@ -1,15 +1,19 @@
 import { useState } from "react";
 
-import { SummaryResponse, generateExecutiveSummary } from "../api";
+import { Profile, SummaryResponse, generateExecutiveSummary } from "../api";
+import { buildDatasetIntelligence } from "../utils/datasetIntelligence";
 
 type ExecutiveSummaryProps = {
   datasetId: string;
+  filename?: string;
+  profile?: Profile;
 };
 
-export function ExecutiveSummary({ datasetId }: ExecutiveSummaryProps) {
+export function ExecutiveSummary({ datasetId, filename, profile }: ExecutiveSummaryProps) {
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const intelligence = profile ? buildDatasetIntelligence(profile, filename) : null;
 
   async function handleGenerate() {
     setIsLoading(true);
@@ -35,7 +39,9 @@ export function ExecutiveSummary({ datasetId }: ExecutiveSummaryProps) {
           </p>
           <h2 className="mt-1 text-lg font-semibold text-slate-950">Executive Summary</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Generate a data-grounded summary from the saved dataset.
+            {intelligence
+              ? `Structured for a detected ${intelligence.typeLabel} dataset.`
+              : "Generate a data-grounded summary from the saved dataset."}
           </p>
         </div>
         <button
@@ -47,6 +53,27 @@ export function ExecutiveSummary({ datasetId }: ExecutiveSummaryProps) {
           {isLoading ? "Generating..." : "Generate Executive Summary"}
         </button>
       </div>
+
+      {intelligence ? (
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <h3 className="text-sm font-semibold text-slate-950">Executive summary structure</h3>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+              {intelligence.summaryStructure.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <h3 className="text-sm font-semibold text-slate-950">Data quality notes</h3>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+              {intelligence.dataQualityNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : null}
 
       {error ? (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">

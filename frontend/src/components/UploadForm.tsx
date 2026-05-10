@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 
 import { UploadResponse, uploadCsv } from "../api";
 import { formatColumnLabel } from "../utils/columnLabels";
+import { buildDatasetIntelligence } from "../utils/datasetIntelligence";
 import { ChatPanel } from "./ChatPanel";
 import { Dashboard } from "./Dashboard";
 import { ExecutiveSummary } from "./ExecutiveSummary";
@@ -14,6 +15,7 @@ export function UploadForm() {
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
+  const intelligence = uploadResult ? buildDatasetIntelligence(uploadResult.profile, uploadResult.filename) : null;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,6 +31,9 @@ export function UploadForm() {
     try {
       const response = await uploadCsv(selectedFile);
       setUploadResult(response);
+      window.setTimeout(() => {
+        document.getElementById("overview")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+      }, 0);
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Upload failed.");
     } finally {
@@ -49,8 +54,8 @@ export function UploadForm() {
                 Upload, profile, and explore a CSV
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200">
-                Start with any CSV. Hotel Booking Demand files unlock richer business insights,
-                filters, chat, and executive summaries.
+                Start with any CSV. DataLens detects the dataset shape and builds the analytics
+                workspace, filters, chat prompts, and summary structure automatically.
               </p>
             </div>
             {uploadResult ? (
@@ -106,6 +111,36 @@ export function UploadForm() {
 
       {uploadResult ? (
         <div className="space-y-6">
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-lg" id="overview">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
+                  Analytics Workspace
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold text-slate-950">
+                  {intelligence?.title}
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                  {intelligence?.description}
+                </p>
+              </div>
+              <span className="w-fit rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-800">
+                Detected: {intelligence?.typeLabel}
+              </span>
+            </div>
+            <nav className="mt-5 flex flex-wrap gap-2" aria-label="Analytics workspace sections">
+              {["Overview", "Insights", "Dashboard", "Profile", "Chat", "Executive Summary"].map((item) => (
+                <a
+                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-teal-500 hover:bg-teal-50 hover:text-teal-800"
+                  href={`#${sectionId(item)}`}
+                  key={item}
+                >
+                  {item}
+                </a>
+              ))}
+            </nav>
+          </section>
+
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -149,14 +184,49 @@ export function UploadForm() {
             filters={filters}
             onFilterChange={setFilters}
           />
-          <ExecutiveSummary datasetId={uploadResult.dataset_id} />
-          <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} filters={filters} />
-          <ProfileSummary columns={uploadResult.profile.columns} rowCount={uploadResult.row_count} />
-          <ChatPanel datasetId={uploadResult.dataset_id} />
+          <section id="insights">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
+                Analyst brief
+              </p>
+              <h2 className="mt-1 text-xl font-semibold text-slate-950">Auto-Generated Insights</h2>
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                {intelligence?.insights.slice(0, 3).map((insight) => (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4" key={insight.label}>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      {insight.label}
+                    </p>
+                    <p className="mt-2 text-xl font-semibold text-slate-950">{insight.value}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{insight.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          <section id="dashboard">
+            <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} filters={filters} />
+          </section>
+          <section id="profile">
+            <ProfileSummary columns={uploadResult.profile.columns} rowCount={uploadResult.row_count} />
+          </section>
+          <section id="chat">
+            <ChatPanel datasetId={uploadResult.dataset_id} profile={uploadResult.profile} />
+          </section>
+          <section id="executive-summary">
+            <ExecutiveSummary
+              datasetId={uploadResult.dataset_id}
+              filename={uploadResult.filename}
+              profile={uploadResult.profile}
+            />
+          </section>
         </div>
       ) : null}
     </section>
   );
+}
+
+function sectionId(label: string): string {
+  return label.toLowerCase().replace(/\s+/g, "-");
 }
 
 function SummaryItem({ label, value }: { label: string; value: string }) {
