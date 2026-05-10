@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 
 import { UploadResponse, uploadCsv } from "../lib/api";
+import { ProfileSummary } from "./ProfileSummary";
 
 export function UploadForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -72,27 +73,17 @@ export function UploadForm() {
       ) : null}
 
       {uploadResult ? (
-        <div className="mt-6 rounded border border-slate-200 bg-slate-50 p-4">
-          <h2 className="text-lg font-semibold text-slate-950">Dataset summary</h2>
-          <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-            <SummaryItem label="Dataset ID" value={uploadResult.dataset_id} />
-            <SummaryItem label="Filename" value={uploadResult.filename} />
-            <SummaryItem label="Rows" value={uploadResult.row_count.toLocaleString()} />
-            <SummaryItem label="Columns" value={uploadResult.column_count.toLocaleString()} />
-          </dl>
-          <div className="mt-4">
-            <h3 className="text-sm font-medium text-slate-800">Column names</h3>
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {uploadResult.column_names.map((columnName) => (
-                <li
-                  className="rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700"
-                  key={columnName}
-                >
-                  {columnName}
-                </li>
-              ))}
-            </ul>
+        <div className="mt-6 space-y-4">
+          <div className="rounded border border-slate-200 bg-slate-50 p-4">
+            <h2 className="text-lg font-semibold text-slate-950">Dataset summary</h2>
+            <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+              <SummaryItem label="Dataset ID" value={uploadResult.dataset_id} />
+              <SummaryItem label="Filename" value={uploadResult.filename} />
+              <SummaryItem label="Rows" value={uploadResult.row_count.toLocaleString()} />
+              <SummaryItem label="Columns" value={uploadResult.column_count.toLocaleString()} />
+            </dl>
           </div>
+          <ProfileSummary columns={uploadResult.profile.columns} rowCount={uploadResult.row_count} />
         </div>
       ) : null}
     </section>

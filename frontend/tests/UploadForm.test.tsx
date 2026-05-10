@@ -55,6 +55,28 @@ describe("UploadForm", () => {
             row_count: 2,
             column_count: 2,
             column_names: ["hotel", "is_canceled"],
+            profile: {
+              row_count: 2,
+              column_count: 2,
+              columns: [
+                {
+                  name: "hotel",
+                  detected_type: "categorical",
+                  null_count: 0,
+                  null_percentage: 0,
+                  unique_value_count: 1,
+                  top_values: [{ value: "City Hotel", count: 1 }],
+                },
+                {
+                  name: "is_canceled",
+                  detected_type: "numeric",
+                  null_count: 0,
+                  null_percentage: 0,
+                  unique_value_count: 1,
+                  stats: { min: 1, max: 1, mean: 1, median: 1 },
+                },
+              ],
+            },
           }),
           { status: 200, headers: { "Content-Type": "application/json" } },
         ),
@@ -65,8 +87,12 @@ describe("UploadForm", () => {
     expect(screen.getAllByText("bookings.csv").length).toBeGreaterThan(0);
     expect(screen.getByText("Rows")).toBeInTheDocument();
     expect(screen.getAllByText("2").length).toBeGreaterThan(0);
-    expect(screen.getByText("hotel")).toBeInTheDocument();
-    expect(screen.getByText("is_canceled")).toBeInTheDocument();
+    // Column names may appear multiple times (in table + detail cards)
+    expect(screen.getAllByText("hotel").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("is_canceled").length).toBeGreaterThan(0);
+    // Verify profile summary is displayed (categorical and numeric may appear in multiple elements)
+    expect(screen.getAllByText("categorical").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("numeric").length).toBeGreaterThan(0);
   });
 
   it("displays an error message after a failed upload", async () => {
