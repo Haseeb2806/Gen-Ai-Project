@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { ColumnProfile } from "../api";
+import { formatColumnLabel } from "../utils/columnLabels";
 
 const EMPTY_VALUE = "\u2014";
 
@@ -12,7 +13,11 @@ interface ProfileSummaryProps {
 export function ProfileSummary({ columns, rowCount }: ProfileSummaryProps) {
   const [query, setQuery] = useState("");
   const filteredColumns = useMemo(
-    () => columns.filter((column) => column.name.toLowerCase().includes(query.toLowerCase())),
+    () =>
+      columns.filter((column) => {
+        const searchText = `${column.name} ${formatColumnLabel(column.name)}`.toLowerCase();
+        return searchText.includes(query.toLowerCase());
+      }),
     [columns, query],
   );
 
@@ -33,7 +38,7 @@ export function ProfileSummary({ columns, rowCount }: ProfileSummaryProps) {
           <input
             className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-teal-700 focus:outline-none focus:ring-1 focus:ring-teal-700"
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Filter by column name"
+            placeholder="Filter by field label or raw name"
             type="search"
             value={query}
           />
@@ -57,7 +62,9 @@ export function ProfileSummary({ columns, rowCount }: ProfileSummaryProps) {
                 className={`border-b border-slate-100 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"}`}
                 key={column.name}
               >
-                <td className="px-4 py-3 font-medium text-slate-900">{column.name}</td>
+                <td className="px-4 py-3 font-medium text-slate-900">
+                  {formatColumnLabel(column.name)}
+                </td>
                 <td className="px-4 py-3">
                   <TypeBadge type={column.detected_type} />
                 </td>
@@ -78,7 +85,7 @@ export function ProfileSummary({ columns, rowCount }: ProfileSummaryProps) {
 
       <details className="rounded-xl border border-slate-200 bg-slate-50 p-4" open>
         <summary className="cursor-pointer text-sm font-semibold text-slate-900">
-          Detailed column profile
+          Detailed Column Profile
         </summary>
         <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
           {filteredColumns.map((column) => (
@@ -97,16 +104,31 @@ function TypeBadge({ type }: { type: ColumnProfile["detected_type"] }) {
     numeric: "bg-emerald-50 text-emerald-700 ring-emerald-200",
     text: "bg-slate-100 text-slate-700 ring-slate-200",
   };
+  const labels = {
+    categorical: "Category",
+    datetime: "Date / Time",
+    numeric: "Numeric",
+    text: "Text",
+  };
 
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${classes[type]}`}>
-      {type}
+      {labels[type]}
     </span>
   );
 }
 
 function ColumnStats({ column, rowCount }: { column: ColumnProfile; rowCount: number }) {
   if (column.detected_type === "numeric" && column.stats) {
+    if (isBinaryColumn(column)) {
+      return (
+        <div className="text-xs text-slate-600">
+          <div>{binaryRateLabel(column.name)}: {formatRate(column.stats.mean)}</div>
+          <div>{binaryInverseLabel(column.name)}: {formatRate(1 - (column.stats.mean ?? 0))}</div>
+        </div>
+      );
+    }
+
     const { min, max, mean, median } = column.stats;
     return (
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-slate-600">
@@ -132,6 +154,18 @@ function ColumnStats({ column, rowCount }: { column: ColumnProfile; rowCount: nu
 
 function ColumnDetail({ column }: { column: ColumnProfile }) {
   if (column.detected_type === "numeric" && column.stats) {
+    if (isBinaryColumn(column)) {
+      return (
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <ColumnDetailHeader column={column} />
+          <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+            <Metric label={binaryRateLabel(column.name)} value={formatRate(column.stats.mean)} />
+            <Metric label={binaryInverseLabel(column.name)} value={formatRate(1 - (column.stats.mean ?? 0))} />
+          </dl>
+        </div>
+      );
+    }
+
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <ColumnDetailHeader column={column} />
@@ -174,7 +208,10 @@ function ColumnDetail({ column }: { column: ColumnProfile }) {
 function ColumnDetailHeader({ column }: { column: ColumnProfile }) {
   return (
     <div>
-      <h4 className="font-semibold text-slate-900">{column.name}</h4>
+      <h4 className="font-semibold text-slate-900">{formatColumnLabel(column.name)}</h4>
+      <p className="mt-1 text-xs text-slate-500">
+        Raw column: <span className="font-mono">{column.name}</span>
+      </p>
       <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
         <TypeBadge type={column.detected_type} />
         <span>{column.unique_value_count} unique values</span>
@@ -201,4 +238,35 @@ function formatNumber(value: number | null): string {
   if (value === null || value === undefined) return EMPTY_VALUE;
   if (typeof value !== "number") return String(value);
   return Number.isInteger(value) ? value.toString() : value.toFixed(2);
+}
+
+function isBinaryColumn(column: ColumnProfile): boolean {
+  const stats = column.stats;
+  return (
+    column.detected_type === "numeric" &&
+    !!stats &&
+    stats.min === 0 &&
+    stats.max === 1 &&
+    column.unique_value_count <= 2 &&
+    stats.mean !== null &&
+    stats.mean !== undefined
+  );
+}
+
+function binaryRateLabel(columnName: string): string {
+  if (columnName.toLowerCase() === "is_canceled") return "Cancellation Rate";
+  if (columnName.toLowerCase() === "is_repeated_guest") return "Repeat Guest Rate";
+  const label = formatColumnLabel(columnName).replace(/ Status$/i, "");
+  return `${label} Rate`;
+}
+
+function binaryInverseLabel(columnName: string): string {
+  if (columnName.toLowerCase() === "is_canceled") return "Not Canceled";
+  if (columnName.toLowerCase() === "is_repeated_guest") return "Not Repeat Guest";
+  return `Not ${formatColumnLabel(columnName).replace(/ Status$/i, "")}`;
+}
+
+function formatRate(value: number | null | undefined): string {
+  if (value === null || value === undefined) return EMPTY_VALUE;
+  return `${(value * 100).toFixed(1)}%`;
 }

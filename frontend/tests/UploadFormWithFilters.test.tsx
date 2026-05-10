@@ -118,7 +118,7 @@ describe("UploadForm with Filters Integration", () => {
 
     // Check that filter buttons exist
     const filterButtons = screen.getAllByRole("button");
-    const hotelFilterButton = filterButtons.find((btn) => btn.textContent?.includes("hotel"));
+    const hotelFilterButton = filterButtons.find((btn) => btn.textContent?.includes("Hotel Type"));
     expect(hotelFilterButton).toBeInTheDocument();
   });
 
@@ -176,7 +176,7 @@ describe("UploadForm with Filters Integration", () => {
 
     // Get first hotel filter button (the one in GlobalFilters)
     const filterButtons = screen.getAllByRole("button");
-    const hotelFilterButton = filterButtons.find((btn) => btn.textContent?.includes("hotel"));
+    const hotelFilterButton = filterButtons.find((btn) => btn.textContent?.includes("Hotel Type"));
     
     if (hotelFilterButton) {
       fireEvent.click(hotelFilterButton);
@@ -185,7 +185,7 @@ describe("UploadForm with Filters Integration", () => {
 
       // Verify filter was applied (button shows count)
       await waitFor(() => {
-        expect(screen.getByText(/hotel \(1\)/)).toBeInTheDocument();
+        expect(screen.getByText(/Hotel Type \(1\)/)).toBeInTheDocument();
       });
     }
 
@@ -233,7 +233,7 @@ describe("UploadForm with Filters Integration", () => {
 
     // Verify filter count badge disappears (filters cleared)
     await waitFor(() => {
-      expect(screen.queryByText(/hotel \(1\)/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Hotel Type \(1\)/)).not.toBeInTheDocument();
     });
   });
 
@@ -291,7 +291,7 @@ describe("UploadForm with Filters Integration", () => {
 
     // Get all buttons and find the hotel filter button (not the dashboard charts button)
     const filterButtons = screen.getAllByRole("button");
-    const hotelFilterButton = filterButtons.find((btn) => btn.textContent?.match(/^hotel\s*▼$/));
+    const hotelFilterButton = filterButtons.find((btn) => btn.textContent?.includes("Hotel Type"));
     
     if (hotelFilterButton) {
       fireEvent.click(hotelFilterButton);

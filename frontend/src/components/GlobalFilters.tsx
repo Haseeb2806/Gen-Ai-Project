@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { ColumnProfile } from "../api";
+import { formatColumnLabel } from "../utils/columnLabels";
 
 export interface FilterState {
   [columnName: string]: string[];
@@ -80,7 +81,7 @@ export function GlobalFilters({ columns, filters, onFilterChange }: GlobalFilter
                 className="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white"
                 key={`${columnName}-${value}`}
               >
-                {columnName}: {value}
+                {formatColumnLabel(columnName)}: {value}
               </span>
             )),
           )}
@@ -128,8 +129,9 @@ function FilterDropdown({ column, selectedValues, onToggleValue }: FilterDropdow
   const [isOpen, setIsOpen] = useState(false);
   const topValues = column.top_values || [];
   const displayLimit = 10;
+  const label = formatColumnLabel(column.name);
   const buttonText =
-    selectedValues.length > 0 ? `${column.name} (${selectedValues.length})` : column.name;
+    selectedValues.length > 0 ? `${label} (${selectedValues.length})` : label;
 
   return (
     <div className="relative">
@@ -141,7 +143,7 @@ function FilterDropdown({ column, selectedValues, onToggleValue }: FilterDropdow
         <div className="flex items-center justify-between">
           <span className="truncate">{buttonText}</span>
           <span className={`ml-2 text-xs text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`}>
-            ▼
+            v
           </span>
         </div>
       </button>

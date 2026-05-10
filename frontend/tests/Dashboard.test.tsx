@@ -87,22 +87,22 @@ describe("Dashboard", () => {
   it("displays categorical distributions section", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Categorical Distributions")).toBeInTheDocument();
-    expect(screen.getAllByText("hotel_type").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("country").length).toBeGreaterThan(0);
+    expect(screen.getByText("Category Breakdown")).toBeInTheDocument();
+    expect(screen.getAllByText("Hotel Type").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Source Country").length).toBeGreaterThan(0);
   });
 
   it("displays numeric distributions section", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Numeric Distributions")).toBeInTheDocument();
-    expect(screen.getAllByText("lead_time").length).toBeGreaterThan(0);
+    expect(screen.getByText("Key Numeric Measures")).toBeInTheDocument();
+    expect(screen.getAllByText("Lead Time").length).toBeGreaterThan(0);
   });
 
   it("displays data quality section", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Data Quality by Column")).toBeInTheDocument();
+    expect(screen.getByText("Column Completeness")).toBeInTheDocument();
   });
 
   it("displays categorical chart data", () => {
@@ -160,8 +160,8 @@ describe("Dashboard", () => {
 
     render(<Dashboard profile={categoricalProfile} rowCount={100} />);
 
-    expect(screen.getByText("Categorical Distributions")).toBeInTheDocument();
-    expect(screen.getAllByText("color").length).toBeGreaterThan(0);
+    expect(screen.getByText("Category Breakdown")).toBeInTheDocument();
+    expect(screen.getAllByText("Color").length).toBeGreaterThan(0);
     expect(screen.getByText("Red")).toBeInTheDocument();
   });
 
@@ -201,9 +201,9 @@ describe("Dashboard", () => {
 
     render(<Dashboard profile={numericProfile} rowCount={100} />);
 
-    expect(screen.getByText("Numeric Distributions")).toBeInTheDocument();
-    expect(screen.getAllByText("temperature").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("humidity").length).toBeGreaterThan(0);
+    expect(screen.getByText("Key Numeric Measures")).toBeInTheDocument();
+    expect(screen.getAllByText("Temperature").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Humidity").length).toBeGreaterThan(0);
   });
 
   it("calculates and displays data quality percentage", () => {
@@ -234,9 +234,9 @@ describe("Dashboard", () => {
     render(<Dashboard profile={manyCategoricalProfile} rowCount={100} />);
 
     // Should only show first 3 categorical charts
-    expect(screen.getAllByText("category_0").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("category_1").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("category_2").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Category 0").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Category 1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Category 2").length).toBeGreaterThan(0);
   });
 
   it("limits displayed numeric charts to 2", () => {
@@ -261,8 +261,8 @@ describe("Dashboard", () => {
     render(<Dashboard profile={manyNumericProfile} rowCount={100} />);
 
     // Should only show first 2 numeric charts
-    expect(screen.getAllByText("numeric_0").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("numeric_1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Numeric 0").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Numeric 1").length).toBeGreaterThan(0);
   });
 
   it("limits data quality display to first 6 columns", () => {
@@ -287,8 +287,8 @@ describe("Dashboard", () => {
     render(<Dashboard profile={manyColumnProfile} rowCount={100} />);
 
     // Should show completeness for first 6 columns
-    expect(screen.getAllByText("column_0").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("column_5").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Column 0").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Column 5").length).toBeGreaterThan(0);
   });
 
   it("formats missing values correctly", () => {

@@ -54,8 +54,8 @@ describe("GlobalFilters", () => {
     );
 
     expect(screen.getByText("Global Filters")).toBeInTheDocument();
-    expect(screen.getByText("hotel")).toBeInTheDocument();
-    expect(screen.getByText("country")).toBeInTheDocument();
+    expect(screen.getByText("Hotel Type")).toBeInTheDocument();
+    expect(screen.getByText("Source Country")).toBeInTheDocument();
   });
 
   it("does not render when no categorical columns available", () => {
@@ -77,7 +77,7 @@ describe("GlobalFilters", () => {
       <GlobalFilters columns={columns} filters={{}} onFilterChange={mockFilterChange} />
     );
 
-    const filterButton = screen.getByText("hotel");
+    const filterButton = screen.getByText("Hotel Type");
     fireEvent.click(filterButton);
 
     expect(screen.getByText("City Hotel")).toBeInTheDocument();
@@ -92,7 +92,7 @@ describe("GlobalFilters", () => {
       <GlobalFilters columns={columns} filters={{}} onFilterChange={mockFilterChange} />
     );
 
-    const filterButton = screen.getByText("hotel");
+    const filterButton = screen.getByText("Hotel Type");
     fireEvent.click(filterButton);
 
     const checkbox = screen.getByRole("checkbox", { name: /City Hotel/i });
@@ -115,7 +115,7 @@ describe("GlobalFilters", () => {
       />
     );
 
-    const filterButton = screen.getByText("hotel (1)");
+    const filterButton = screen.getByText("Hotel Type (1)");
     fireEvent.click(filterButton);
 
     const checkbox = screen.getByRole("checkbox", { name: /Resort Hotel/i });
@@ -138,7 +138,7 @@ describe("GlobalFilters", () => {
       />
     );
 
-    const filterButton = screen.getByText("hotel (2)");
+    const filterButton = screen.getByText("Hotel Type (2)");
     fireEvent.click(filterButton);
 
     const checkbox = screen.getByRole("checkbox", { name: /City Hotel/i });
@@ -193,7 +193,7 @@ describe("GlobalFilters", () => {
       />
     );
 
-    expect(screen.getByText("hotel (2)")).toBeInTheDocument();
+    expect(screen.getByText("Hotel Type (2)")).toBeInTheDocument();
   });
 
   it("prioritizes Hotel Booking columns when hotel column exists", () => {
@@ -235,8 +235,8 @@ describe("GlobalFilters", () => {
     );
 
     // Hotel should appear before other columns
-    const hotelButton = screen.getByText("hotel");
-    const randomButton = screen.getByText("random_col");
+    const hotelButton = screen.getByText("Hotel Type");
+    const randomButton = screen.getByText("Random Col");
 
     // Check that hotel comes first in the DOM
     expect(hotelButton.compareDocumentPosition(randomButton)).toBe(4);
@@ -250,7 +250,7 @@ describe("GlobalFilters", () => {
       <GlobalFilters columns={columns} filters={{}} onFilterChange={mockFilterChange} />
     );
 
-    const filterButton = screen.getByText("hotel");
+    const filterButton = screen.getByText("Hotel Type");
 
     // Initially closed, options not visible
     expect(screen.queryByText("City Hotel")).not.toBeInTheDocument();
@@ -283,7 +283,7 @@ describe("GlobalFilters", () => {
       <GlobalFilters columns={[manyValuesColumn]} filters={{}} onFilterChange={mockFilterChange} />
     );
 
-    const filterButton = screen.getByText("test");
+    const filterButton = screen.getByText("Test");
     fireEvent.click(filterButton);
 
     expect(screen.getByText("+10 more values")).toBeInTheDocument();
@@ -306,9 +306,9 @@ describe("GlobalFilters", () => {
     );
 
     // Should show only first 6
-    expect(screen.getByText("col_0")).toBeInTheDocument();
-    expect(screen.getByText("col_5")).toBeInTheDocument();
-    expect(screen.queryByText("col_6")).not.toBeInTheDocument();
+    expect(screen.getByText("Col 0")).toBeInTheDocument();
+    expect(screen.getByText("Col 5")).toBeInTheDocument();
+    expect(screen.queryByText("Col 6")).not.toBeInTheDocument();
   });
 
   it("skips numeric columns when building filters", () => {
@@ -323,9 +323,9 @@ describe("GlobalFilters", () => {
       <GlobalFilters columns={columns} filters={{}} onFilterChange={mockFilterChange} />
     );
 
-    expect(screen.getByText("hotel")).toBeInTheDocument();
-    expect(screen.getByText("country")).toBeInTheDocument();
-    expect(screen.queryByText("lead_time")).not.toBeInTheDocument();
+    expect(screen.getByText("Hotel Type")).toBeInTheDocument();
+    expect(screen.getByText("Source Country")).toBeInTheDocument();
+    expect(screen.queryByText("Lead Time")).not.toBeInTheDocument();
   });
 
   it("skips categorical columns with too many unique values", () => {
@@ -345,7 +345,7 @@ describe("GlobalFilters", () => {
       <GlobalFilters columns={columns} filters={{}} onFilterChange={mockFilterChange} />
     );
 
-    expect(screen.getByText("hotel")).toBeInTheDocument();
-    expect(screen.queryByText("high_cardinality")).not.toBeInTheDocument();
+    expect(screen.getByText("Hotel Type")).toBeInTheDocument();
+    expect(screen.queryByText("High Cardinality")).not.toBeInTheDocument();
   });
 });

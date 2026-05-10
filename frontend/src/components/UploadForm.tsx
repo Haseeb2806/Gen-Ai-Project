@@ -1,12 +1,8 @@
 import { FormEvent, useState } from "react";
 
 import { UploadResponse, uploadCsv } from "../api";
+import { formatColumnLabel } from "../utils/columnLabels";
 import { ChatPanel } from "./ChatPanel";
-import {
-  CompanyContext,
-  CompanyIntelligence,
-  createEmptyCompanyContext,
-} from "./CompanyIntelligence";
 import { Dashboard } from "./Dashboard";
 import { ExecutiveSummary } from "./ExecutiveSummary";
 import { FilterState, GlobalFilters } from "./GlobalFilters";
@@ -18,7 +14,6 @@ export function UploadForm() {
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
-  const [companyContext, setCompanyContext] = useState<CompanyContext>(createEmptyCompanyContext);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,7 +77,6 @@ export function UploadForm() {
                 setError(null);
                 setUploadResult(null);
                 setFilters({});
-                setCompanyContext(createEmptyCompanyContext());
               }}
               type="file"
             />
@@ -130,17 +124,30 @@ export function UploadForm() {
               <SummaryItem label="Rows" value={uploadResult.row_count.toLocaleString()} />
               <SummaryItem label="Columns" value={uploadResult.column_count.toLocaleString()} />
             </dl>
+            <div className="mt-5">
+              <p className="text-sm font-medium text-slate-700">Detected fields</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {uploadResult.column_names.slice(0, 12).map((columnName) => (
+                  <span
+                    className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+                    key={columnName}
+                  >
+                    {formatColumnLabel(columnName)}
+                  </span>
+                ))}
+                {uploadResult.column_names.length > 12 ? (
+                  <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white">
+                    +{uploadResult.column_names.length - 12} more
+                  </span>
+                ) : null}
+              </div>
+            </div>
           </div>
 
           <GlobalFilters
             columns={uploadResult.profile.columns}
             filters={filters}
             onFilterChange={setFilters}
-          />
-          <CompanyIntelligence
-            context={companyContext}
-            dataset={uploadResult}
-            onChange={setCompanyContext}
           />
           <ExecutiveSummary datasetId={uploadResult.dataset_id} />
           <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} filters={filters} />

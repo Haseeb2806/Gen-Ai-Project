@@ -1,4 +1,5 @@
 import { Profile } from "../api";
+import { formatColumnLabel } from "../utils/columnLabels";
 import { FilterState } from "./GlobalFilters";
 
 interface DashboardProps {
@@ -8,7 +9,8 @@ interface DashboardProps {
 }
 
 export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
-  const numericColumns = profile.columns.filter((col) => col.detected_type === "numeric");
+  const numericColumns = profile.columns.filter((col) => col.detected_type === "numeric" && !isBinaryColumn(col));
+  const binaryColumns = profile.columns.filter((col) => col.detected_type === "numeric" && isBinaryColumn(col));
   const categoricalColumns = profile.columns.filter(
     (col) => col.detected_type === "categorical" && col.top_values && col.top_values.length > 0,
   );
@@ -92,7 +94,7 @@ export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
         <div className="space-y-4">
           <SectionHeading
             eyebrow="Composition"
-            title="Categorical Distributions"
+            title="Category Breakdown"
             subtitle="Largest category shares across the most useful low-cardinality fields."
           />
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -103,14 +105,17 @@ export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
         </div>
       )}
 
-      {numericColumns.length > 0 && (
+      {(numericColumns.length > 0 || binaryColumns.length > 0) && (
         <div className="space-y-4">
           <SectionHeading
             eyebrow="Measures"
-            title="Numeric Distributions"
+            title="Key Numeric Measures"
             subtitle="Core range and central tendency for the highest-signal numeric fields."
           />
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {binaryColumns.slice(0, 2).map((column) => (
+              <BinaryRateChart key={column.name} column={column} />
+            ))}
             {numericColumns.slice(0, 2).map((column) => (
               <NumericChart key={column.name} column={column} />
             ))}
@@ -121,7 +126,7 @@ export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
       <div className="space-y-4">
         <SectionHeading
           eyebrow="Completeness"
-          title="Data Quality by Column"
+          title="Column Completeness"
           subtitle="Columns with missing values are highlighted first for review."
         />
         <DataQualityChart columns={profile.columns} rowCount={rowCount} />
@@ -221,7 +226,7 @@ function CategoricalChart({
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
-          <h4 className="text-base font-semibold text-slate-950">{column.name}</h4>
+          <h4 className="text-base font-semibold text-slate-950">{formatColumnLabel(column.name)}</h4>
           <p className="mt-1 text-sm text-slate-500">Top values by record count</p>
         </div>
         <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
@@ -269,11 +274,11 @@ function NumericChart({
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
-          <h4 className="text-base font-semibold text-slate-950">{column.name}</h4>
+          <h4 className="text-base font-semibold text-slate-950">{formatColumnLabel(column.name)}</h4>
           <p className="mt-1 text-sm text-slate-500">Range and midpoint statistics</p>
         </div>
         <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-          Measure
+          Numeric Indicator
         </span>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -281,6 +286,53 @@ function NumericChart({
         <StatTile label="Median" value={stats.median} />
         <StatTile label="Mean" value={stats.mean} />
         <StatTile label="Max" value={stats.max} />
+      </div>
+    </div>
+  );
+}
+
+function BinaryRateChart({
+  column,
+}: {
+  column: {
+    name: string;
+    stats?: {
+      mean: number | null;
+    };
+  };
+}) {
+  const mean = column.stats?.mean;
+  if (mean === null || mean === undefined) return null;
+  const inverse = 1 - mean;
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <h4 className="text-base font-semibold text-slate-950">{formatColumnLabel(column.name)}</h4>
+          <p className="mt-1 text-sm text-slate-500">Binary outcome summarized as a rate</p>
+        </div>
+        <span className="rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-700">
+          Rate Indicator
+        </span>
+      </div>
+      <div className="space-y-3">
+        <RateBar label={binaryRateLabel(column.name)} value={mean} />
+        <RateBar label={binaryInverseLabel(column.name)} value={inverse} />
+      </div>
+    </div>
+  );
+}
+
+function RateBar({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <span className="font-medium text-slate-700">{label}</span>
+        <span className="font-semibold text-slate-900">{(value * 100).toFixed(1)}%</span>
+      </div>
+      <div className="mt-1 h-3 overflow-hidden rounded-full bg-slate-100">
+        <div className="h-full rounded-full bg-teal-600" style={{ width: `${Math.max(value * 100, 4)}%` }} />
       </div>
     </div>
   );
@@ -314,7 +366,7 @@ function DataQualityChart({
           return (
             <div key={column.name}>
               <div className="flex justify-between gap-3 text-xs">
-                <span className="font-medium text-slate-700">{column.name}</span>
+                <span className="font-medium text-slate-700">{formatColumnLabel(column.name)}</span>
                 <span className="text-slate-600">{completeness.toFixed(1)}% complete</span>
               </div>
               <div className="mt-2 h-2.5 w-full rounded-full bg-slate-100">
@@ -332,7 +384,7 @@ function DataQualityChart({
 }
 
 function buildHotelInsights(profile: Profile, rowCount: number) {
-  const columns = new Map(profile.columns.map((column) => [column.name, column]));
+  const columns = new Map(profile.columns.map((column) => [column.name.toLowerCase(), column]));
   const hasHotelBookingSignals = columns.has("hotel") || columns.has("is_canceled") || columns.has("adr");
   if (!hasHotelBookingSignals) return [];
 
@@ -352,7 +404,7 @@ function buildHotelInsights(profile: Profile, rowCount: number) {
     insights.push({
       label: "Cancellation Rate",
       value: `${(canceled.stats.mean * 100).toFixed(1)}%`,
-      subtitle: "Average of the is_canceled flag across uploaded bookings.",
+      subtitle: "Average cancellation outcome across uploaded bookings.",
       tone: canceled.stats.mean > 0.35 ? "rose" : "teal",
     });
   }
@@ -403,7 +455,7 @@ function buildHotelInsights(profile: Profile, rowCount: number) {
   if (highMissing) {
     insights.push({
       label: "Data Quality Warning",
-      value: highMissing.name,
+      value: formatColumnLabel(highMissing.name),
       subtitle: `${highMissing.null_percentage}% missing values. Review before using this field in decisions.`,
       tone: "rose",
     });
@@ -432,7 +484,7 @@ function buildGenericInsights(profile: Profile) {
     },
     {
       label: "Quality Watch",
-      value: highMissing ? highMissing.name : "Clear",
+      value: highMissing ? formatColumnLabel(highMissing.name) : "Clear",
       subtitle: highMissing
         ? `${highMissing.null_percentage}% missing values in this field.`
         : "No column exceeds 20% missing values.",
@@ -456,4 +508,34 @@ function formatCurrency(value: number): string {
     maximumFractionDigits: 2,
     minimumFractionDigits: 0,
   });
+}
+
+function isBinaryColumn(column: {
+  detected_type: string;
+  name: string;
+  stats?: { min: number | null; max: number | null; mean: number | null };
+  unique_value_count: number;
+}): boolean {
+  const stats = column.stats;
+  return (
+    column.detected_type === "numeric" &&
+    !!stats &&
+    stats.min === 0 &&
+    stats.max === 1 &&
+    column.unique_value_count <= 2 &&
+    stats.mean !== null &&
+    stats.mean !== undefined
+  );
+}
+
+function binaryRateLabel(columnName: string): string {
+  if (columnName.toLowerCase() === "is_canceled") return "Cancellation Rate";
+  if (columnName.toLowerCase() === "is_repeated_guest") return "Repeat Guest Rate";
+  return `${formatColumnLabel(columnName).replace(/ Status$/i, "")} Rate`;
+}
+
+function binaryInverseLabel(columnName: string): string {
+  if (columnName.toLowerCase() === "is_canceled") return "Not Canceled";
+  if (columnName.toLowerCase() === "is_repeated_guest") return "Not Repeat Guest";
+  return `Not ${formatColumnLabel(columnName).replace(/ Status$/i, "")}`;
 }

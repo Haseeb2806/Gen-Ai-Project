@@ -57,8 +57,8 @@ describe("ProfileSummary", () => {
     render(<ProfileSummary columns={[numericColumn]} rowCount={119390} />);
 
     // Column should appear in both table and detail section
-    expect(screen.getAllByText("age").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("numeric").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Age").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Numeric").length).toBeGreaterThan(0);
     expect(screen.getByText("5 (1.5%)")).toBeInTheDocument();
 
     // Check detailed stats section
@@ -76,8 +76,8 @@ describe("ProfileSummary", () => {
     render(<ProfileSummary columns={[categoricalColumn]} rowCount={119390} />);
 
     // Column should appear in both table and detail section
-    expect(screen.getAllByText("hotel_type").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("categorical").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Hotel Type").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Category").length).toBeGreaterThan(0);
     expect(screen.getAllByText("2")[0]).toBeInTheDocument(); // unique count
 
     // Check detailed top values section
@@ -91,17 +91,17 @@ describe("ProfileSummary", () => {
   it("displays text column with basic info", () => {
     render(<ProfileSummary columns={[textColumn]} rowCount={119390} />);
 
-    expect(screen.getAllByText("reservation_status").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("text").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Reservation Status").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Text").length).toBeGreaterThan(0);
     expect(screen.getByText("3 unique values")).toBeInTheDocument();
   });
 
   it("displays datetime column with basic info", () => {
     render(<ProfileSummary columns={[datetimeColumn]} rowCount={119390} />);
 
-    const columnHeaders = screen.getAllByText("arrival_date");
+    const columnHeaders = screen.getAllByText("Arrival Date");
     expect(columnHeaders.length).toBeGreaterThan(0);
-    const typeElements = screen.getAllByText("datetime");
+    const typeElements = screen.getAllByText("Date / Time");
     expect(typeElements.length).toBeGreaterThan(0);
     expect(screen.getByText("926 unique values")).toBeInTheDocument();
   });
@@ -118,10 +118,10 @@ describe("ProfileSummary", () => {
     render(<ProfileSummary columns={columns} rowCount={119390} />);
 
     // All columns should be rendered (may appear multiple times - in table and in detail cards)
-    expect(screen.getAllByText("age").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("hotel_type").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("reservation_status").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("arrival_date").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Age").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Hotel Type").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Reservation Status").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Arrival Date").length).toBeGreaterThan(0);
   });
 
   it("displays 0 nulls without showing null info", () => {
@@ -138,16 +138,16 @@ describe("ProfileSummary", () => {
       />
     );
 
-    const numericElements = screen.getAllByText("numeric");
+    const numericElements = screen.getAllByText("Numeric");
     expect(numericElements.length).toBeGreaterThan(0);
 
-    const categoricalElements = screen.getAllByText("categorical");
+    const categoricalElements = screen.getAllByText("Category");
     expect(categoricalElements.length).toBeGreaterThan(0);
 
-    const textElements = screen.getAllByText("text");
+    const textElements = screen.getAllByText("Text");
     expect(textElements.length).toBeGreaterThan(0);
 
-    const datetimeElements = screen.getAllByText("datetime");
+    const datetimeElements = screen.getAllByText("Date / Time");
     expect(datetimeElements.length).toBeGreaterThan(0);
   });
 
@@ -181,5 +181,45 @@ describe("ProfileSummary", () => {
 
     // Numeric column unique count
     expect(screen.getByText("85")).toBeInTheDocument();
+  });
+
+  it("uses readable labels in the Detailed Column Profile", () => {
+    render(
+      <ProfileSummary
+        columns={[
+          {
+            name: "lead_time",
+            detected_type: "numeric",
+            null_count: 0,
+            null_percentage: 0,
+            unique_value_count: 10,
+            stats: { min: 0, max: 30, mean: 12, median: 10 },
+          },
+          {
+            name: "is_canceled",
+            detected_type: "numeric",
+            null_count: 0,
+            null_percentage: 0,
+            unique_value_count: 2,
+            stats: { min: 0, max: 1, mean: 0.37, median: 0 },
+          },
+          {
+            name: "arrival_date_week_number",
+            detected_type: "numeric",
+            null_count: 0,
+            null_percentage: 0,
+            unique_value_count: 52,
+            stats: { min: 1, max: 52, mean: 26, median: 26 },
+          },
+        ]}
+        rowCount={100}
+      />,
+    );
+
+    expect(screen.getByText("Detailed Column Profile")).toBeInTheDocument();
+    expect(screen.getAllByText("Lead Time").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Cancellation Status").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Arrival Week Number").length).toBeGreaterThan(0);
+    expect(screen.getByText("Cancellation Rate")).toBeInTheDocument();
   });
 });
