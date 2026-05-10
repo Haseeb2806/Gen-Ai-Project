@@ -19,12 +19,16 @@ readme = "README.md"
 # Do not add these manually. Let your agent add them as it builds each slice,
 # following the `incremental-implementation` skill.
 dependencies = [
+    "fastapi",
+    "uvicorn",
 ]
 
 [project.optional-dependencies]
 # Development dependencies for testing and linting.
 # Again, let your agent add these as needed.
 dev = [
+    "pytest",
+    "httpx",
 ]
 
 [build-system]
