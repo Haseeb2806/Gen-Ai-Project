@@ -90,9 +90,13 @@ describe("UploadForm", () => {
     // Column names may appear multiple times (in table + detail cards)
     expect(screen.getAllByText("hotel").length).toBeGreaterThan(0);
     expect(screen.getAllByText("is_canceled").length).toBeGreaterThan(0);
-    // Verify profile summary is displayed (categorical and numeric may appear in multiple elements)
+    // Verify profile summary is displayed
     expect(screen.getAllByText("categorical").length).toBeGreaterThan(0);
     expect(screen.getAllByText("numeric").length).toBeGreaterThan(0);
+    // Verify dashboard is displayed
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Total Rows")).toBeInTheDocument();
+    expect(screen.getByText("Categorical Distributions")).toBeInTheDocument();
   });
 
   it("displays an error message after a failed upload", async () => {

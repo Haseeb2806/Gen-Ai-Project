@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 
 import { UploadResponse, uploadCsv } from "../lib/api";
 import { ProfileSummary } from "./ProfileSummary";
+import { Dashboard } from "./Dashboard";
 
 export function UploadForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -84,6 +85,7 @@ export function UploadForm() {
             </dl>
           </div>
           <ProfileSummary columns={uploadResult.profile.columns} rowCount={uploadResult.row_count} />
+          <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} />
         </div>
       ) : null}
     </section>
