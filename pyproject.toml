@@ -20,6 +20,8 @@ readme = "README.md"
 # following the `incremental-implementation` skill.
 dependencies = [
     "fastapi",
+    "pandas",
+    "python-multipart",
     "uvicorn",
 ]
 
