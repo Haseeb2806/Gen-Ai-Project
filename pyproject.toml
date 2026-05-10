@@ -1,0 +1,49 @@
+[project]
+name = "datalens-backend"
+version = "0.1.0"
+description = "DataLens backend — FastAPI application for data analytics with LLM chat"
+requires-python = ">=3.11"
+readme = "README.md"
+
+# TODO: Your agent will add specific dependencies here as it implements features.
+# Core dependencies you'll almost certainly need include:
+#   - fastapi
+#   - uvicorn
+#   - pydantic
+#   - pandas
+#   - python-multipart (for file uploads)
+#   - python-dotenv
+#   - sqlalchemy (for SQLite interaction)
+#   - Your chosen LLM SDK (e.g., google-generativeai, anthropic, openai, groq)
+#
+# Do not add these manually. Let your agent add them as it builds each slice,
+# following the `incremental-implementation` skill.
+dependencies = [
+]
+
+[project.optional-dependencies]
+# Development dependencies for testing and linting.
+# Again, let your agent add these as needed.
+dev = [
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/app"]
+
+# -----------------------------------------------------------------------------
+# Tool configuration
+# -----------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+
+[tool.ruff]
+# Your agent can configure ruff here if you use it for linting.
+line-length = 100
+target-version = "py311"
