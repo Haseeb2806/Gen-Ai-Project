@@ -2,6 +2,7 @@ import { ColumnProfile, Profile } from "../api";
 import { formatColumnLabel } from "./columnLabels";
 
 export type DatasetType = "hotel" | "sales" | "generic";
+export type FieldRole = "measure" | "dimension" | "timeDimension" | "binaryFlag" | "identifier" | "highMissingField";
 
 export type DatasetIntelligence = {
   chartRecommendations: string[];
@@ -64,6 +65,60 @@ export function detectDatasetType(profile: Profile): DatasetType {
   });
 
   return hasSalesMeasure && hasSalesDimension ? "sales" : "generic";
+}
+
+export function classifyColumnRole(column: ColumnProfile): FieldRole {
+  if (column.null_percentage >= 60) {
+    return "highMissingField";
+  }
+
+  const name = normalize(column.name);
+  const compactName = name.replace(/_/g, "");
+
+  if (
+    /\b(date|year|month|week|day|quarter|time)\b/.test(name) ||
+    /(^|_)arrival_date_/.test(name) ||
+    ["date", "year", "month", "week", "day"].includes(name)
+  ) {
+    return "timeDimension";
+  }
+
+  if (
+    name === "id" ||
+    name.endsWith("_id") ||
+    name.includes("_id_") ||
+    name.endsWith("_code") ||
+    compactName.endsWith("code") ||
+    compactName.endsWith("number") ||
+    compactName.includes("identifier")
+  ) {
+    return "identifier";
+  }
+
+  if (isBinaryFlag(column)) {
+    return "binaryFlag";
+  }
+
+  if (column.detected_type === "numeric" && column.stats) {
+    return "measure";
+  }
+
+  if (column.detected_type === "datetime") {
+    return "timeDimension";
+  }
+
+  return "dimension";
+}
+
+export function getColumnsByRole(profile: Profile) {
+  return {
+    measures: profile.columns.filter((column) => classifyColumnRole(column) === "measure"),
+    dimensions: profile.columns.filter((column) => classifyColumnRole(column) === "dimension"),
+    timeDimensions: profile.columns.filter((column) => classifyColumnRole(column) === "timeDimension"),
+    binaryFlags: profile.columns.filter((column) => classifyColumnRole(column) === "binaryFlag"),
+    identifiers: profile.columns.filter((column) => classifyColumnRole(column) === "identifier"),
+    highMissingFields: profile.columns.filter((column) => classifyColumnRole(column) === "highMissingField"),
+  };
 }
 
 function buildHotelIntelligence(
@@ -263,8 +318,9 @@ function buildGenericIntelligence(
   dataQuality: number,
   highMissing?: ColumnProfile,
 ): DatasetIntelligence {
-  const numericColumns = profile.columns.filter((column) => column.detected_type === "numeric" && column.stats);
-  const categoricalColumns = profile.columns.filter((column) => column.detected_type === "categorical" && column.top_values?.length);
+  const roles = getColumnsByRole(profile);
+  const numericColumns = roles.measures;
+  const categoricalColumns = roles.dimensions.filter((column) => column.top_values?.length);
   const primaryNumeric = numericColumns[0];
   const primaryCategory = categoricalColumns[0];
 
@@ -362,6 +418,27 @@ function findFirstMatching(profile: Profile, candidates: string[]) {
     const name = normalize(column.name);
     return normalizedCandidates.some((candidate) => name === candidate || name.includes(candidate));
   });
+}
+
+function isBinaryFlag(column: ColumnProfile) {
+  const name = normalize(column.name);
+  const stats = column.stats;
+  const nameLooksBinary =
+    name.startsWith("is_") ||
+    name.endsWith("_flag") ||
+    name.endsWith("_status") ||
+    ["holiday", "holiday_flag", "is_canceled", "is_repeated_guest"].includes(name);
+
+  return (
+    column.detected_type === "numeric" &&
+    !!stats &&
+    stats.min === 0 &&
+    stats.max === 1 &&
+    column.unique_value_count <= 2 &&
+    stats.mean !== null &&
+    stats.mean !== undefined &&
+    (nameLooksBinary || column.unique_value_count <= 2)
+  );
 }
 
 function normalize(value: string) {

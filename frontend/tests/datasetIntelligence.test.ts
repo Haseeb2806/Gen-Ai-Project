@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildDatasetIntelligence, detectDatasetType } from "../src/utils/datasetIntelligence";
+import { buildDatasetIntelligence, classifyColumnRole, detectDatasetType, getColumnsByRole } from "../src/utils/datasetIntelligence";
 import { Profile } from "../src/api";
 
 describe("dataset intelligence", () => {
@@ -29,6 +29,63 @@ describe("dataset intelligence", () => {
     expect(intelligence.title).toBe("Generic CSV Analytics Workspace");
     expect(intelligence.kpis.map((kpi) => kpi.label)).toContain("Total Rows");
     expect(intelligence.suggestedQuestions.join(" ")).toMatch(/missing values/i);
+  });
+
+  it("classifies time, binary, identifier, missing, and measure roles", () => {
+    expect(classifyColumnRole({
+      name: "arrival_date_year",
+      detected_type: "numeric",
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 3,
+      stats: { min: 2015, max: 2017, mean: 2016, median: 2016 },
+    })).toBe("timeDimension");
+    expect(classifyColumnRole({
+      name: "is_canceled",
+      detected_type: "numeric",
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 2,
+      stats: { min: 0, max: 1, mean: 0.37, median: 0 },
+    })).toBe("binaryFlag");
+    expect(classifyColumnRole({
+      name: "Store_ID",
+      detected_type: "numeric",
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 100,
+      stats: { min: 1, max: 100, mean: 50, median: 50 },
+    })).toBe("identifier");
+    expect(classifyColumnRole({
+      name: "mostly_missing",
+      detected_type: "text",
+      null_count: 80,
+      null_percentage: 80,
+      unique_value_count: 3,
+    })).toBe("highMissingField");
+    expect(classifyColumnRole({
+      name: "lead_time",
+      detected_type: "numeric",
+      null_count: 0,
+      null_percentage: 0,
+      unique_value_count: 40,
+      stats: { min: 0, max: 400, mean: 90, median: 75 },
+    })).toBe("measure");
+  });
+
+  it("does not include time fields in the measure role", () => {
+    const roles = getColumnsByRole({
+      row_count: 100,
+      column_count: 3,
+      columns: [
+        { name: "arrival_date_week_number", detected_type: "numeric", null_count: 0, null_percentage: 0, unique_value_count: 52, stats: { min: 1, max: 53, mean: 26, median: 26 } },
+        { name: "Month", detected_type: "numeric", null_count: 0, null_percentage: 0, unique_value_count: 12, stats: { min: 1, max: 12, mean: 6, median: 6 } },
+        { name: "Weekly_Sales", detected_type: "numeric", null_count: 0, null_percentage: 0, unique_value_count: 100, stats: { min: 100, max: 1000, mean: 500, median: 450 } },
+      ],
+    });
+
+    expect(roles.timeDimensions.map((column) => column.name)).toEqual(["arrival_date_week_number", "Month"]);
+    expect(roles.measures.map((column) => column.name)).toEqual(["Weekly_Sales"]);
   });
 });
 

@@ -8,7 +8,7 @@ from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
 from backend.app.services.cleaning import filter_analytical_data, get_privacy_columns_for_hiding
 
 
-TOP_VALUE_LIMIT = 5
+TOP_VALUE_LIMIT = 12
 
 
 def profile_dataframe(dataframe: pd.DataFrame, cleaning_log: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -61,7 +61,7 @@ def _profile_column(series: pd.Series, row_count: int) -> dict[str, Any]:
             "median": _clean_number(numeric_series.median()),
         }
 
-    if detected_type == "categorical":
+    if detected_type == "categorical" or _should_include_top_values(series, detected_type):
         counts = series.dropna().value_counts().head(TOP_VALUE_LIMIT)
         profile["top_values"] = [
             {"value": str(value), "count": int(count)} for value, count in counts.items()
@@ -81,6 +81,20 @@ def _detect_column_type(series: pd.Series) -> str:
         return "categorical"
 
     return "text"
+
+
+def _should_include_top_values(series: pd.Series, detected_type: str) -> bool:
+    if detected_type not in {"numeric", "datetime"}:
+        return False
+
+    name = str(series.name).lower()
+    unique_count = int(series.nunique(dropna=True))
+    name_suggests_time_or_flag = any(
+        token in name
+        for token in ["date", "year", "month", "week", "day", "holiday", "is_", "_flag"]
+    )
+
+    return unique_count <= TOP_VALUE_LIMIT or name_suggests_time_or_flag
 
 
 def _is_datetime_like(series: pd.Series) -> bool:

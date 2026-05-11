@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { ColumnProfile } from "../api";
 import { formatColumnLabel } from "../utils/columnLabels";
+import { classifyColumnRole } from "../utils/datasetIntelligence";
 
 export interface FilterState {
   [columnName: string]: string[];
@@ -50,6 +51,12 @@ export function GlobalFilters({ columns, filters, onFilterChange }: GlobalFilter
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Controls</p>
           <h3 className="mt-1 text-lg font-semibold text-slate-950">Global Filters</h3>
+          {hasActiveFilters ? (
+            <p className="mt-1 text-sm text-slate-600">
+              {Object.values(filters).reduce((sum, values) => sum + values.length, 0)} applied filter
+              {Object.values(filters).reduce((sum, values) => sum + values.length, 0) !== 1 ? "s" : ""}
+            </p>
+          ) : null}
         </div>
         {hasActiveFilters ? (
           <button
@@ -92,13 +99,15 @@ export function GlobalFilters({ columns, filters, onFilterChange }: GlobalFilter
 }
 
 function getCategoricalColumnsForFilters(columns: ColumnProfile[]) {
-  const categoricalCols = columns.filter(
-    (col) =>
-      col.detected_type === "categorical" &&
+  const categoricalCols = columns.filter((col) => {
+    const role = classifyColumnRole(col);
+    return (
+      (role === "dimension" || role === "timeDimension" || role === "binaryFlag") &&
       col.top_values &&
       col.top_values.length > 0 &&
-      col.unique_value_count <= 100,
-  );
+      col.unique_value_count <= 100
+    );
+  });
   const hasHotelColumn = categoricalCols.some((col) => col.name === "hotel");
 
   if (hasHotelColumn) {
