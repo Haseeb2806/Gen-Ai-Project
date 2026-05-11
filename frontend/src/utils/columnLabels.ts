@@ -7,8 +7,12 @@ const SPECIAL_LABELS: Record<string, string> = {
   assigned_room_type: "Assigned Room Type",
   country: "Source Country",
   customer_type: "Customer Type",
+  cpi: "Consumer Price Index",
+  date: "Date",
   deposit_type: "Deposit Type",
   distribution_channel: "Distribution Channel",
+  fuel_price: "Fuel Price",
+  holiday_flag: "Holiday Week",
   hotel: "Hotel Type",
   is_canceled: "Cancellation Status",
   is_repeated_guest: "Repeat Guest Status",
@@ -19,7 +23,14 @@ const SPECIAL_LABELS: Record<string, string> = {
   required_car_parking_spaces: "Required Car Parking Spaces",
   reservation_status_date: "Reservation Status Date",
   reserved_room_type: "Reserved Room Type",
+  revenue: "Revenue",
+  sales: "Sales",
+  store: "Store",
+  store_id: "Store ID",
+  temperature: "Temperature",
   total_of_special_requests: "Total Special Requests",
+  unemployment: "Unemployment Rate",
+  weekly_sales: "Weekly Sales",
 };
 
 const SMALL_WORDS = new Set(["a", "an", "and", "as", "at", "by", "for", "in", "of", "on", "or", "the", "to"]);

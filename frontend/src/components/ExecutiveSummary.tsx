@@ -30,17 +30,46 @@ export function ExecutiveSummary({ datasetId, filename, profile }: ExecutiveSumm
     }
   }
 
+  function handleExport() {
+    if (!summary) return;
+    const content = `
+${intelligence?.typeLabel || "Dataset"} Summary Report
+Generated: ${new Date().toLocaleDateString()}
+
+Dataset: ${filename || datasetId}
+
+EXECUTIVE SUMMARY
+${summary.summary}
+
+KEY FINDINGS
+${summary.key_findings.map((f) => `• ${f}`).join("\n")}
+
+DATA QUALITY NOTES
+${summary.data_quality_notes.map((n) => `• ${n}`).join("\n")}
+    `.trim();
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `DataLens-Summary-${new Date().toISOString().split("T")[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-            Narrative insight
+            Insights
           </p>
           <h2 className="mt-1 text-lg font-semibold text-slate-950">Executive Summary</h2>
           <p className="mt-1 text-sm text-slate-600">
             {intelligence
-              ? `Structured for a detected ${intelligence.typeLabel} dataset.`
+              ? `Data-driven summary for your ${intelligence.typeLabel.toLowerCase()} dataset.`
               : "Generate a data-grounded summary from the saved dataset."}
           </p>
         </div>
@@ -50,14 +79,14 @@ export function ExecutiveSummary({ datasetId, filename, profile }: ExecutiveSumm
           onClick={handleGenerate}
           type="button"
         >
-          {isLoading ? "Generating..." : "Generate Executive Summary"}
+          {isLoading ? "Generating..." : "Generate Summary"}
         </button>
       </div>
 
       {intelligence ? (
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-950">Executive summary structure</h3>
+            <h3 className="text-sm font-semibold text-slate-950">Expected Structure</h3>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
               {intelligence.summaryStructure.map((item) => (
                 <li key={item}>{item}</li>
@@ -65,7 +94,7 @@ export function ExecutiveSummary({ datasetId, filename, profile }: ExecutiveSumm
             </ul>
           </div>
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-950">Data quality notes</h3>
+            <h3 className="text-sm font-semibold text-slate-950">Data Quality Notes</h3>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
               {intelligence.dataQualityNotes.map((note) => (
                 <li key={note}>{note}</li>
@@ -82,30 +111,55 @@ export function ExecutiveSummary({ datasetId, filename, profile }: ExecutiveSumm
       ) : null}
 
       {summary ? (
-        <article className="mt-4 space-y-4 rounded-2xl border border-teal-200 bg-teal-50 p-5 shadow-sm">
-          <p className="text-sm leading-6 text-slate-900">{summary.summary}</p>
+        <article className="mt-4 space-y-5 rounded-2xl border border-gradient-to-r from-teal-200 to-blue-200 bg-gradient-to-br from-teal-50 to-blue-50 p-5 shadow-lg">
+          {/* Main Summary */}
+          <div className="border-b border-teal-200 pb-5">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-900">Summary</h3>
+            <p className="mt-3 leading-relaxed text-slate-900">{summary.summary}</p>
+          </div>
 
+          {/* Key Findings */}
           {summary.key_findings.length > 0 ? (
-            <div>
-              <h3 className="text-sm font-semibold text-teal-950">Key findings</h3>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-900">
-                {summary.key_findings.map((finding) => (
-                  <li key={finding}>{finding}</li>
+            <div className="border-b border-teal-200 pb-5">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-900">Key Findings</h3>
+              <div className="mt-3 space-y-2">
+                {summary.key_findings.map((finding, idx) => (
+                  <div className="flex gap-3" key={idx}>
+                    <div className="mt-1 h-6 w-6 flex-shrink-0 rounded-full bg-teal-600 text-center text-xs font-bold text-white">
+                      {idx + 1}
+                    </div>
+                    <p className="text-sm leading-relaxed text-slate-900">{finding}</p>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           ) : null}
 
+          {/* Data Quality Notes */}
           {summary.data_quality_notes.length > 0 ? (
             <div>
-              <h3 className="text-sm font-semibold text-teal-950">Data quality notes</h3>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-900">
-                {summary.data_quality_notes.map((note) => (
-                  <li key={note}>{note}</li>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-900">Data Quality Notes</h3>
+              <ul className="mt-3 space-y-2">
+                {summary.data_quality_notes.map((note, idx) => (
+                  <li className="flex gap-2 text-sm text-slate-900" key={idx}>
+                    <span className="mt-1 text-teal-600">✓</span>
+                    <span>{note}</span>
+                  </li>
                 ))}
               </ul>
             </div>
           ) : null}
+
+          {/* Export Button */}
+          <div className="flex gap-2 border-t border-teal-200 pt-4">
+            <button
+              className="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
+              onClick={handleExport}
+              type="button"
+            >
+              ↓ Download Summary
+            </button>
+          </div>
         </article>
       ) : null}
     </section>

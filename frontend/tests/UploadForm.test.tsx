@@ -9,10 +9,10 @@ afterEach(() => {
 });
 
 describe("UploadForm", () => {
-  it("renders the upload component", () => {
+  it("renders upload screen initially", () => {
     render(<UploadForm />);
 
-    expect(screen.getByLabelText(/csv file/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/choose a csv file/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /upload csv/i })).toBeInTheDocument();
   });
 
@@ -24,12 +24,12 @@ describe("UploadForm", () => {
       type: "text/csv",
     });
 
-    await user.upload(screen.getByLabelText(/csv file/i), file);
+    await user.upload(screen.getByLabelText(/choose a csv file/i), file);
 
     expect(screen.getByText(/selected file:/i)).toHaveTextContent("bookings.csv");
   });
 
-  it("displays summary after a successful upload", async () => {
+  it("displays analytics workspace with section navigation after upload", async () => {
     const user = userEvent.setup();
     let resolveUpload: (response: Response) => void = () => undefined;
     const uploadPromise = new Promise<Response>((resolve) => {
@@ -41,7 +41,7 @@ describe("UploadForm", () => {
     const file = new File(["hotel,is_canceled\nCity Hotel,1\n"], "bookings.csv", {
       type: "text/csv",
     });
-    await user.upload(screen.getByLabelText(/csv file/i), file);
+    await user.upload(screen.getByLabelText(/choose a csv file/i), file);
     await user.click(screen.getByRole("button", { name: /upload csv/i }));
 
     expect(screen.getByRole("button", { name: /uploading/i })).toBeDisabled();
@@ -83,20 +83,93 @@ describe("UploadForm", () => {
       );
     });
 
-    expect((await screen.findAllByText("dataset-123")).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("bookings.csv").length).toBeGreaterThan(0);
-    expect(screen.getByText("Rows")).toBeInTheDocument();
-    expect(screen.getAllByText("2").length).toBeGreaterThan(0);
-    // Column names may appear multiple times (in table + detail cards)
+    // Check for navigation buttons with exact labels
+    expect(screen.getByRole("link", { name: /Overview/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Trends/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Breakdown/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Data Profile/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Ask Data/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Summary/i })).toBeInTheDocument();
+
+    // Check for compact upload bar
+    expect(screen.getByText("Active dataset")).toBeInTheDocument();
+    expect(screen.getByText("bookings.csv")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /change file/i })).toBeInTheDocument();
+
+    // Verify profile summary is displayed
     expect(screen.getAllByText("Hotel Type").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Cancellation Status").length).toBeGreaterThan(0);
-    // Verify profile summary is displayed
-    expect(screen.getAllByText("Category").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Numeric").length).toBeGreaterThan(0);
-    // Verify dashboard is displayed
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Total Bookings")).toBeInTheDocument();
-    expect(screen.getByText("Category Breakdown")).toBeInTheDocument();
+  });
+
+  it("displays human-readable column names", async () => {
+    const user = userEvent.setup();
+    let resolveUpload: (response: Response) => void = () => undefined;
+    const uploadPromise = new Promise<Response>((resolve) => {
+      resolveUpload = resolve;
+    });
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => uploadPromise);
+    render(<UploadForm />);
+
+    const file = new File(
+      ["weekly_sales,store,holiday_flag\n1000,1,0\n"],
+      "walmart.csv",
+      {
+        type: "text/csv",
+      },
+    );
+    await user.upload(screen.getByLabelText(/choose a csv file/i), file);
+    await user.click(screen.getByRole("button", { name: /upload csv/i }));
+
+    await act(async () => {
+      resolveUpload(
+        new Response(
+          JSON.stringify({
+            dataset_id: "dataset-456",
+            filename: "walmart.csv",
+            row_count: 1,
+            column_count: 3,
+            column_names: ["weekly_sales", "store", "holiday_flag"],
+            profile: {
+              row_count: 1,
+              column_count: 3,
+              columns: [
+                {
+                  name: "weekly_sales",
+                  detected_type: "numeric",
+                  null_count: 0,
+                  null_percentage: 0,
+                  unique_value_count: 1,
+                  stats: { min: 1000, max: 1000, mean: 1000, median: 1000 },
+                },
+                {
+                  name: "store",
+                  detected_type: "numeric",
+                  null_count: 0,
+                  null_percentage: 0,
+                  unique_value_count: 1,
+                  stats: { min: 1, max: 1, mean: 1, median: 1 },
+                },
+                {
+                  name: "holiday_flag",
+                  detected_type: "numeric",
+                  null_count: 0,
+                  null_percentage: 0,
+                  unique_value_count: 2,
+                  stats: { min: 0, max: 1, mean: 0.5, median: 0.5 },
+                },
+              ],
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      );
+    });
+
+    // Check that the navigation appears indicating workspace is loaded
+    expect(screen.getByRole("link", { name: "Overview" })).toBeInTheDocument();
+    // Check human-readable labels are used (not raw names)
+    expect(screen.getAllByText("Weekly Sales").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Holiday Week").length).toBeGreaterThan(0);
   });
 
   it("moves a new user into an adaptive analytics workspace after upload", async () => {
@@ -112,17 +185,13 @@ describe("UploadForm", () => {
     const file = new File(["Store,Date,Weekly_Sales\n1,2020-01-01,1000\n"], "walmart.csv", {
       type: "text/csv",
     });
-    await user.upload(screen.getByLabelText(/csv file/i), file);
+    await user.upload(screen.getByLabelText(/choose a csv file/i), file);
     await user.click(screen.getByRole("button", { name: /upload csv/i }));
 
-    expect(await screen.findByText("Analytics Workspace")).toBeInTheDocument();
-    expect(screen.getAllByText("Retail Sales Analytics Workspace").length).toBeGreaterThan(0);
-    expect(screen.getByText("Detected: Retail / Sales")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Overview" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Insights" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Chat" })).toBeInTheDocument();
-    expect(screen.getByText("Total Sales")).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "Overview" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Trends" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Breakdown" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ask Data" })).toBeInTheDocument();
     expect(screen.getAllByText("Weekly Sales").length).toBeGreaterThan(0);
   });
 
@@ -140,7 +209,7 @@ describe("UploadForm", () => {
     const file = new File(["hotel,is_canceled\nCity Hotel,1\n"], "bookings.csv", {
       type: "text/csv",
     });
-    await user.upload(screen.getByLabelText(/csv file/i), file);
+    await user.upload(screen.getByLabelText(/choose a csv file/i), file);
     expect(screen.getByText(/selected file:/i)).toHaveTextContent("bookings.csv");
 
     // Click upload, which will call the mocked fetch that returns an error

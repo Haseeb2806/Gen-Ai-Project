@@ -1,13 +1,23 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 
 import { UploadResponse, uploadCsv } from "../api";
 import { formatColumnLabel } from "../utils/columnLabels";
 import { buildDatasetIntelligence } from "../utils/datasetIntelligence";
 import { ChatPanel } from "./ChatPanel";
+import { CompactUploadBar } from "./CompactUploadBar";
 import { Dashboard } from "./Dashboard";
 import { ExecutiveSummary } from "./ExecutiveSummary";
 import { FilterState, GlobalFilters } from "./GlobalFilters";
 import { ProfileSummary } from "./ProfileSummary";
+
+const SECTION_NAV = [
+  { id: "overview", label: "Overview" },
+  { id: "trends", label: "Trends" },
+  { id: "breakdown", label: "Breakdown" },
+  { id: "profile", label: "Data Profile" },
+  { id: "chat", label: "Ask Data" },
+  { id: "summary", label: "Summary" },
+];
 
 export function UploadForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -15,6 +25,7 @@ export function UploadForm() {
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [filters, setFilters] = useState<FilterState>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const intelligence = uploadResult ? buildDatasetIntelligence(uploadResult.profile, uploadResult.filename) : null;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -26,7 +37,6 @@ export function UploadForm() {
 
     setIsUploading(true);
     setError(null);
-    setUploadResult(null);
 
     try {
       const response = await uploadCsv(selectedFile);
@@ -41,66 +51,217 @@ export function UploadForm() {
     }
   }
 
-  return (
-    <section className="w-full space-y-6">
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-xl">
-        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-teal-900 p-6 text-white sm:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+  function handleChangeFile() {
+    setSelectedFile(null);
+    setUploadResult(null);
+    setError(null);
+    setFilters({});
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  if (!uploadResult) {
+    return (
+      <section className="w-full space-y-6">
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-xl">
+          <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 text-white sm:p-8">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-teal-200">
-                DataLens command center
+                Get started
               </p>
               <h2 className="mt-3 text-3xl font-semibold tracking-normal sm:text-4xl">
-                Upload, profile, and explore a CSV
+                Upload your CSV file
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200">
-                Start with any CSV. DataLens detects the dataset shape and builds the analytics
-                workspace, filters, chat prompts, and summary structure automatically.
+                DataLens will automatically detect your dataset type, profile the data, and build an 
+                interactive analytics workspace with smart visualizations, filters, and insights.
               </p>
             </div>
-            {uploadResult ? (
-              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-                <p className="text-xs uppercase tracking-wide text-teal-100">Active dataset</p>
-                <p className="mt-1 max-w-xs truncate text-lg font-semibold">{uploadResult.filename}</p>
-              </div>
-            ) : null}
           </div>
+
+          <form className="space-y-5 bg-white p-5 sm:p-6" onSubmit={handleSubmit}>
+            <div>
+              <label className="block text-sm font-medium text-slate-800" htmlFor="csv-file">
+                Choose a CSV file
+              </label>
+              <input
+                accept=".csv,text/csv"
+                className="mt-2 block w-full cursor-pointer rounded-xl border border-slate-300 bg-slate-50 text-sm text-slate-800 file:mr-4 file:border-0 file:bg-teal-700 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-white hover:file:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-600"
+                id="csv-file"
+                name="csv-file"
+                onChange={(event) => {
+                  setSelectedFile(event.target.files?.[0] ?? null);
+                  setError(null);
+                }}
+                ref={fileInputRef}
+                type="file"
+              />
+            </div>
+
+            {selectedFile ? (
+              <p className="rounded-full bg-slate-100 px-3 py-2 text-sm text-slate-700">
+                Selected file: <span className="font-medium">{selectedFile.name}</span>
+              </p>
+            ) : null}
+
+            <button
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              disabled={isUploading || !selectedFile}
+              type="submit"
+            >
+              {isUploading ? "Uploading..." : "Upload CSV"}
+            </button>
+          </form>
         </div>
 
-        <form className="space-y-5 bg-white p-5 sm:p-6" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-sm font-medium text-slate-800" htmlFor="csv-file">
-              CSV file
-            </label>
-            <input
-              accept=".csv,text/csv"
-              className="mt-2 block w-full cursor-pointer rounded-xl border border-slate-300 bg-slate-50 text-sm text-slate-800 file:mr-4 file:border-0 file:bg-teal-700 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-white hover:file:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-600"
-              id="csv-file"
-              name="csv-file"
-              onChange={(event) => {
-                setSelectedFile(event.target.files?.[0] ?? null);
-                setError(null);
-                setUploadResult(null);
-                setFilters({});
-              }}
-              type="file"
-            />
+        {error ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 shadow-sm" role="alert">
+            {error}
           </div>
+        ) : null}
+      </section>
+    );
+  }
 
-          {selectedFile ? (
-            <p className="rounded-full bg-slate-100 px-3 py-2 text-sm text-slate-700">
-              Selected file: <span className="font-medium">{selectedFile.name}</span>
+  // Render analytics workspace
+  return (
+    <section className="w-full space-y-6">
+      <CompactUploadBar uploadResult={uploadResult} onChangeFile={handleChangeFile} />
+
+      {/* Navigation */}
+      <nav className="sticky top-12 z-30 border-b border-slate-200 bg-white shadow-sm" aria-label="Section navigation">
+        <div className="mx-auto flex max-w-7xl flex-wrap gap-0 px-4 sm:px-6 lg:px-8">
+          {SECTION_NAV.map((section) => (
+            <a
+              className="border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-600 hover:border-teal-500 hover:text-teal-700"
+              href={`#${section.id}`}
+              key={section.id}
+            >
+              {section.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      {/* Overview Section */}
+      <div id="overview" className="pt-4">
+        <section className="space-y-6">
+          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-white to-slate-50 p-6 shadow-lg sm:p-8">
+            <div className="mb-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
+                Overview
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold text-slate-950">
+                {intelligence?.title}
+              </h2>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                {intelligence?.description}
+              </p>
+            </div>
+
+            {/* KPI Row */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {intelligence?.kpis.slice(0, 4).map((kpi) => (
+                <KPICard key={kpi.label} {...kpi} />
+              ))}
+            </div>
+
+            {/* Data Quality Card */}
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
+              <h3 className="text-sm font-semibold text-slate-950">What We Found</h3>
+              <ul className="mt-3 space-y-2">
+                {intelligence?.dataQualityNotes.map((note) => (
+                  <li className="flex gap-2 text-sm text-slate-700" key={note}>
+                    <span className="text-teal-600">✓</span>
+                    <span>{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* Trends Section */}
+      <div id="trends" className="pt-4">
+        <section className="space-y-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
+              Visualization
             </p>
-          ) : null}
+            <h2 className="mt-1 text-2xl font-semibold text-slate-950">Trends</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Time-based and performance trends across your dataset.
+            </p>
+          </div>
+          
+          <GlobalFilters
+            columns={uploadResult.profile.columns}
+            filters={filters}
+            onFilterChange={setFilters}
+          />
+          
+          <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} filters={filters} sectionType="trends" />
+        </section>
+      </div>
 
-          <button
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-            disabled={isUploading}
-            type="submit"
-          >
-            {isUploading ? "Uploading..." : "Upload CSV"}
-          </button>
-        </form>
+      {/* Breakdown Section */}
+      <div id="breakdown" className="pt-4">
+        <section className="space-y-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
+              Composition
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold text-slate-950">Breakdown</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Category distributions and segmentation analysis.
+            </p>
+          </div>
+          
+          <GlobalFilters
+            columns={uploadResult.profile.columns}
+            filters={filters}
+            onFilterChange={setFilters}
+          />
+          
+          <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} filters={filters} sectionType="breakdown" />
+        </section>
+      </div>
+
+      {/* Data Profile Section */}
+      <div id="profile" className="pt-4">
+        <section className="space-y-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
+              Schema
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold text-slate-950">Data Profile</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Complete column inventory with types, completeness, and statistics.
+            </p>
+          </div>
+          
+          <ProfileSummary columns={uploadResult.profile.columns} rowCount={uploadResult.row_count} />
+        </section>
+      </div>
+
+      {/* Ask Data Section */}
+      <div id="chat" className="pt-4">
+        <section className="space-y-6">
+          <ChatPanel datasetId={uploadResult.dataset_id} profile={uploadResult.profile} />
+        </section>
+      </div>
+
+      {/* Summary Section */}
+      <div id="summary" className="pt-4">
+        <section className="space-y-6">
+          <ExecutiveSummary
+            datasetId={uploadResult.dataset_id}
+            filename={uploadResult.filename}
+            profile={uploadResult.profile}
+          />
+        </section>
       </div>
 
       {error ? (
@@ -108,132 +269,37 @@ export function UploadForm() {
           {error}
         </div>
       ) : null}
-
-      {uploadResult ? (
-        <div className="space-y-6">
-          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-lg" id="overview">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
-                  Analytics Workspace
-                </p>
-                <h2 className="mt-2 text-3xl font-semibold text-slate-950">
-                  {intelligence?.title}
-                </h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                  {intelligence?.description}
-                </p>
-              </div>
-              <span className="w-fit rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-800">
-                Detected: {intelligence?.typeLabel}
-              </span>
-            </div>
-            <nav className="mt-5 flex flex-wrap gap-2" aria-label="Analytics workspace sections">
-              {["Overview", "Insights", "Dashboard", "Profile", "Chat", "Executive Summary"].map((item) => (
-                <a
-                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-teal-500 hover:bg-teal-50 hover:text-teal-800"
-                  href={`#${sectionId(item)}`}
-                  key={item}
-                >
-                  {item}
-                </a>
-              ))}
-            </nav>
-          </section>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-                  Dataset summary
-                </p>
-                <h2 className="mt-1 text-xl font-semibold text-slate-950">Dataset summary</h2>
-              </div>
-              <span className="w-fit rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white">
-                {uploadResult.column_count.toLocaleString()} fields
-              </span>
-            </div>
-            <dl className="mt-5 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
-              <SummaryItem label="Dataset ID" value={uploadResult.dataset_id} />
-              <SummaryItem label="Filename" value={uploadResult.filename} />
-              <SummaryItem label="Rows" value={uploadResult.row_count.toLocaleString()} />
-              <SummaryItem label="Columns" value={uploadResult.column_count.toLocaleString()} />
-            </dl>
-            <div className="mt-5">
-              <p className="text-sm font-medium text-slate-700">Detected fields</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {uploadResult.column_names.slice(0, 12).map((columnName) => (
-                  <span
-                    className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
-                    key={columnName}
-                  >
-                    {formatColumnLabel(columnName)}
-                  </span>
-                ))}
-                {uploadResult.column_names.length > 12 ? (
-                  <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white">
-                    +{uploadResult.column_names.length - 12} more
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          <GlobalFilters
-            columns={uploadResult.profile.columns}
-            filters={filters}
-            onFilterChange={setFilters}
-          />
-          <section id="insights">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-                Analyst brief
-              </p>
-              <h2 className="mt-1 text-xl font-semibold text-slate-950">Auto-Generated Insights</h2>
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-                {intelligence?.insights.slice(0, 3).map((insight) => (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4" key={insight.label}>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      {insight.label}
-                    </p>
-                    <p className="mt-2 text-xl font-semibold text-slate-950">{insight.value}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{insight.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-          <section id="dashboard">
-            <Dashboard profile={uploadResult.profile} rowCount={uploadResult.row_count} filters={filters} />
-          </section>
-          <section id="profile">
-            <ProfileSummary columns={uploadResult.profile.columns} rowCount={uploadResult.row_count} />
-          </section>
-          <section id="chat">
-            <ChatPanel datasetId={uploadResult.dataset_id} profile={uploadResult.profile} />
-          </section>
-          <section id="executive-summary">
-            <ExecutiveSummary
-              datasetId={uploadResult.dataset_id}
-              filename={uploadResult.filename}
-              profile={uploadResult.profile}
-            />
-          </section>
-        </div>
-      ) : null}
     </section>
   );
 }
 
-function sectionId(label: string): string {
-  return label.toLowerCase().replace(/\s+/g, "-");
-}
+function KPICard({
+  label,
+  subtitle,
+  tone = "slate",
+  value,
+}: {
+  label: string;
+  subtitle: string;
+  tone?: "teal" | "blue" | "amber" | "rose" | "slate" | "indigo" | "cyan" | "purple";
+  value: string;
+}) {
+  const bgGradients = {
+    teal: "from-teal-600 to-cyan-600",
+    blue: "from-blue-600 to-cyan-600",
+    amber: "from-amber-600 to-orange-600",
+    rose: "from-rose-600 to-red-600",
+    slate: "from-slate-700 to-slate-600",
+    indigo: "from-indigo-600 to-purple-600",
+    cyan: "from-cyan-600 to-blue-600",
+    purple: "from-purple-600 to-indigo-600",
+  };
 
-function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <dt className="font-medium text-slate-600">{label}</dt>
-      <dd className="mt-1 break-words text-lg font-semibold text-slate-950">{value}</dd>
+    <div className={`rounded-2xl bg-gradient-to-br ${bgGradients[tone]} p-5 text-white shadow-lg`}>
+      <p className="text-xs font-semibold uppercase tracking-[0.15em] opacity-80">{label}</p>
+      <p className="mt-3 text-2xl font-bold">{value}</p>
+      <p className="mt-2 text-xs opacity-70">{subtitle}</p>
     </div>
   );
 }

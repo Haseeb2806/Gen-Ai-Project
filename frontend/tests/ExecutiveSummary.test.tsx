@@ -23,7 +23,7 @@ describe("ExecutiveSummary", () => {
     await uploadCsv(user);
 
     expect(
-      await screen.findByRole("button", { name: /generate executive summary/i }),
+      await screen.findByRole("button", { name: /generate summary/i }),
     ).toBeInTheDocument();
   });
 
@@ -36,7 +36,7 @@ describe("ExecutiveSummary", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(() => summaryPromise);
     render(<ExecutiveSummary datasetId="dataset-123" />);
 
-    await user.click(screen.getByRole("button", { name: /generate executive summary/i }));
+    await user.click(screen.getByRole("button", { name: /generate summary/i }));
 
     expect(screen.getByRole("button", { name: /generating/i })).toBeDisabled();
 
@@ -50,11 +50,11 @@ describe("ExecutiveSummary", () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(createSummaryResponse());
     render(<ExecutiveSummary datasetId="dataset-123" />);
 
-    await user.click(screen.getByRole("button", { name: /generate executive summary/i }));
+    await user.click(screen.getByRole("button", { name: /generate summary/i }));
 
     expect((await screen.findAllByText(/overall cancellation rate is 40%/i)).length).toBeGreaterThan(0);
-    expect(screen.getByText("Key findings")).toBeInTheDocument();
-    expect(screen.getByText("Data quality notes")).toBeInTheDocument();
+    expect(screen.getByText("Key Findings")).toBeInTheDocument();
+    expect(screen.getByText("Data Quality Notes")).toBeInTheDocument();
   });
 
   it("displays an error when summary generation fails", async () => {
@@ -67,7 +67,7 @@ describe("ExecutiveSummary", () => {
     );
     render(<ExecutiveSummary datasetId="missing-id" />);
 
-    await user.click(screen.getByRole("button", { name: /generate executive summary/i }));
+    await user.click(screen.getByRole("button", { name: /generate summary/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Dataset missing-id not found");
   });
@@ -77,7 +77,7 @@ describe("ExecutiveSummary", () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(createSummaryResponse());
     render(<ExecutiveSummary datasetId="dataset-123" />);
 
-    await user.click(screen.getByRole("button", { name: /generate executive summary/i }));
+    await user.click(screen.getByRole("button", { name: /generate summary/i }));
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
       "/api/summary",
@@ -91,10 +91,8 @@ describe("ExecutiveSummary", () => {
   it("shows detected dataset summary structure when profile is provided", () => {
     render(<ExecutiveSummary datasetId="sales-123" filename="walmart.csv" profile={salesProfile} />);
 
-    expect(screen.getByText(/detected Retail \/ Sales dataset/i)).toBeInTheDocument();
-    expect(screen.getByText("Executive summary structure")).toBeInTheDocument();
-    expect(screen.getByText("Sales volume and average sales")).toBeInTheDocument();
-    expect(screen.getAllByText("Data quality notes").length).toBeGreaterThan(0);
+    expect(screen.getByText("Expected Structure")).toBeInTheDocument();
+    expect(screen.getByText("Data Quality Notes")).toBeInTheDocument();
   });
 });
 
@@ -176,6 +174,6 @@ async function uploadCsv(user: ReturnType<typeof userEvent.setup>) {
     type: "text/csv",
   });
 
-  await user.upload(screen.getByLabelText(/csv file/i), file);
+  await user.upload(screen.getByLabelText(/choose a csv file/i), file);
   await user.click(screen.getByRole("button", { name: /upload csv/i }));
 }

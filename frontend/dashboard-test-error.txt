@@ -1,0 +1,409 @@
+﻿
+> datalens-frontend@0.1.0 test
+> vitest run Dashboard
+
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mC:/Users/DELL/OneDrive/Documents/datalens-hotel-booking/frontend[39m
+
+ [33mΓ¥»[39m tests/Dashboard.test.tsx [2m ([22m[2m15 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 287[2mms[22m[39m
+[31m   [33mΓ¥»[31m tests/Dashboard.test.tsx[2m > [22mDashboard[2m > [22mcalculates and displays data quality percentage[39m
+[31m     ΓåÆ Unable to find an element with the text: /98\.\d+% complete/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<section[31m
+      [33mclass[31m=[32m"space-y-6"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-4"[31m
+      [36m>[31m
+        [36m<div>[31m
+          [36m<h3[31m
+            [33mclass[31m=[32m"text-lg font-semibold text-slate-950"[31m
+          [36m>[31m
+            [0mCategory Distribution[0m
+          [36m</h3>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"mt-1 text-sm text-slate-600"[31m
+          [36m>[31m
+            [0mHow data breaks down by key categories and segments.[0m
+          [36m</p>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"grid grid-cols-1 gap-6 lg:grid-cols-2"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"mb-5 flex items-start justify-between gap-3"[31m
+            [36m>[31m
+              [36m<div>[31m
+                [36m<h4[31m
+                  [33mclass[31m=[32m"text-base font-semibold text-slate-950"[31m
+                [36m>[31m
+                  [0mHotel Type[0m
+                [36m</h4>[31m
+                [36m<p[31m
+                  [33mclass[31m=[32m"mt-1 text-sm text-slate-500"[31m
+                [36m>[31m
+                  [0mTop values by record count[0m
+                [36m</p>[31m
+              [36m</div>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"[31m
+              [36m>[31m
+                [0mCategory[0m
+              [36m</span>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"space-y-3"[31m
+            [36m>[31m
+              [36m<div>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center justify-between gap-3 text-xs"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"truncate font-medium text-slate-700"[31m
+                  [36m>[31m
+                    [0mCity Hotel[0m
+                  [36m</span>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"font-semibold text-slate-900"[31m
+                  [36m>[31m
+                    [0m600[0m
+                  [36m</span>[31m
+                [36m</div>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"mt-1 h-3 overflow-hidden rounded-full bg-slate-100"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"h-full rounded-full bg-teal-600"[31m
+                    [33mstyle[31m=[32m"width: 100%;"[31m
+                    [33mtitle[31m=[32m"City Hotel: 600 (60.0%)"[31m
+                  [36m/>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<div>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center justify-between gap-3 text-xs"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"truncate font-medium text-slate-700"[31m
+                  [36m>[31m
+                    [0mResort Hotel[0m
+                  [36m</span>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"font-semibold text-slate-900"[31m
+                  [36m>[31m
+                    [0m400[0m
+                  [36m</span>[31m
+                [36m</div>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"mt-1 h-3 overflow-hidden rounded-full bg-slate-100"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"h-full rounded-full bg-blue-600"[31m
+                    [33mstyle[31m=[32m"width: 66.66666666666666%;"[31m
+                    [33mtitle[31m=[32m"Resort Hotel: 400 (40.0%)"[31m
+                  [36m/>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"mb-5 flex items-start justify-between gap-3"[31m
+            [36m>[31m
+              [36m<div>[31m
+                [36m<h4[31m
+                  [33mclass[31m=[32m"text-base font-semibold text-slate-950"[31m
+                [36m>[31m
+                  [0mSource Country[0m
+                [36m</h4>[31m
+                [36m<p[31m
+                  [33mclass[31m=[32m"mt-1 text-sm text-slate-500"[31m
+                [36m>[31m
+                  [0mTop values by record count[0m
+                [36m</p>[31m
+              [36m</div>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"[31m
+              [36m>[31m
+                [0mCategory[0m
+              [36m</span>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"space-y-3"[31m
+            [36m>[31m
+              [36m<div>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center justify-between gap-3 text-xs"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"truncate font-medium text-slate-700"[31m
+                  [36m>[31m
+                    [0mPRT[0m
+                  [36m</span>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"font-semibold text-slate-900"[31m
+                  [36m>[31m
+                    [0m350[0m
+                  [36m</span>[31m
+                [36m</div>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"mt-1 h-3 overflow-hidden rounded-full bg-slate-100"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"h-full rounded-full bg-teal-600"[31m
+                    [33mstyle[31m=[32m"width: 100%;"[31m
+                    [33mtitle[31m=[32m"PRT: 350 (35.0%)"[31m
+                  [36m/>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<div>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center justify-between gap-3 text-xs"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"truncate font-medium text-slate-700"[31m
+                  [36m>[31m
+                    [0mGBR[0m
+                  [36m</span>[31m
+                  [36m<span[31m
+                   ...[39m
+
+npm : [31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1m[7m Failed Tests 1 
+[27m[22mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m
+At line:1 char:1
++ npm test -- Dashboard 2>&1 | Out-File dashboard-test-error.txt -Encod ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([31mΓÄ»ΓÄ»ΓÄ»Γ...»ΓÄ»ΓÄ»ΓÄ»[39m 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+[31m[1m[7m FAIL [27m[22m[39m tests/Dashboard.test.tsx[2m > 
+[22mDashboard[2m > [22mcalculates and displays data quality percentage
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with 
+the text: /98\.\d+% complete/. This could be because the text is broken up by 
+multiple elements. In this case, you can provide a function for your text 
+matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"space-y-6"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-lg font-semibold text-slate-950"[39m
+          [36m>[39m
+            [0mCategory Distribution[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm text-slate-600"[39m
+          [36m>[39m
+            [0mHow data breaks down by key categories and segments.[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 gap-6 lg:grid-cols-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-slate-200 bg-white 
+p-5 shadow-sm"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-5 flex items-start justify-between 
+gap-3"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<h4[39m
+                  [33mclass[39m=[32m"text-base font-semibold 
+text-slate-950"[39m
+                [36m>[39m
+                  [0mHotel Type[0m
+                [36m</h4>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"mt-1 text-sm text-slate-500"[39m
+                [36m>[39m
+                  [0mTop values by record count[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"rounded-full bg-blue-50 px-2.5 py-1 
+text-xs font-medium text-blue-700"[39m
+              [36m>[39m
+                [0mCategory[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"space-y-3"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between 
+gap-3 text-xs"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate font-medium 
+text-slate-700"[39m
+                  [36m>[39m
+                    [0mCity Hotel[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"font-semibold text-slate-900"[39m
+                  [36m>[39m
+                    [0m600[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1 h-3 overflow-hidden rounded-full 
+bg-slate-100"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"h-full rounded-full bg-teal-600"[39m
+                    [33mstyle[39m=[32m"width: 100%;"[39m
+                    [33mtitle[39m=[32m"City Hotel: 600 (60.0%)"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between 
+gap-3 text-xs"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate font-medium 
+text-slate-700"[39m
+                  [36m>[39m
+                    [0mResort Hotel[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"font-semibold text-slate-900"[39m
+                  [36m>[39m
+                    [0m400[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1 h-3 overflow-hidden rounded-full 
+bg-slate-100"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"h-full rounded-full bg-blue-600"[39m
+                    [33mstyle[39m=[32m"width: 66.66666666666666%;"[39m
+                    [33mtitle[39m=[32m"Resort Hotel: 400 (40.0%)"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-slate-200 bg-white 
+p-5 shadow-sm"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-5 flex items-start justify-between 
+gap-3"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<h4[39m
+                  [33mclass[39m=[32m"text-base font-semibold 
+text-slate-950"[39m
+                [36m>[39m
+                  [0mSource Country[0m
+                [36m</h4>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"mt-1 text-sm text-slate-500"[39m
+                [36m>[39m
+                  [0mTop values by record count[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"rounded-full bg-blue-50 px-2.5 py-1 
+text-xs font-medium text-blue-700"[39m
+              [36m>[39m
+                [0mCategory[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"space-y-3"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between 
+gap-3 text-xs"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate font-medium 
+text-slate-700"[39m
+                  [36m>[39m
+                    [0mPRT[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"font-semibold text-slate-900"[39m
+                  [36m>[39m
+                    [0m350[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1 h-3 overflow-hidden rounded-full 
+bg-slate-100"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"h-full rounded-full bg-teal-600"[39m
+                    [33mstyle[39m=[32m"width: 100%;"[39m
+                    [33mtitle[39m=[32m"PRT: 350 (35.0%)"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between 
+gap-3 text-xs"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate font-medium 
+text-slate-700"[39m
+                  [36m>[39m
+                    [0mGBR[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                   ...
+[90m [2mΓ¥»[22m Object.getElementError node_modules/@testing-library/react/n
+ode_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/react/node_modules/@testing-li
+brary/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/react/node_modules/@testing-li
+brary/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/react/node_modules/@testing-li
+brary/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2mΓ¥»[22m tests/Dashboard.test.tsx:[2m213:19[22m[39m
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m14 passed[39m[22m[90m (15)[39m
+[2m   Start at [22m 14:23:05
+[2m   Duration [22m 2.50s[2m (transform 115ms, setup 164ms, collect 437ms, tests 287ms, environment 801ms, prepare 519ms)[22m
+
+    [90m211| [39m    [90m// Data quality = (5000 - 55) / 5000 * 100 = 
+98.9%[39m
+    [90m212| [39m    
+[34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"Data 
+Quality"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m213| [39m    
+[34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/98\.\d+% 
+complete/[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                  [31m^[39m
+    [90m214| [39m  })[33m;[39m
+    [90m215| [39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»Γ
+Ä»[1/1]ΓÄ»[22m[39m
+

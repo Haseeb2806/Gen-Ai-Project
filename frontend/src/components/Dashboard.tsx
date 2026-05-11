@@ -7,9 +7,10 @@ interface DashboardProps {
   profile: Profile;
   rowCount: number;
   filters?: FilterState;
+  sectionType?: "trends" | "breakdown";
 }
 
-export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
+export function Dashboard({ profile, rowCount, filters = {}, sectionType = "breakdown" }: DashboardProps) {
   const numericColumns = profile.columns.filter((col) => col.detected_type === "numeric" && !isBinaryColumn(col));
   const binaryColumns = profile.columns.filter((col) => col.detected_type === "numeric" && isBinaryColumn(col));
   const categoricalColumns = profile.columns.filter(
@@ -21,75 +22,56 @@ export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
   const activeFilterCount = Object.values(filters).reduce((sum, values) => sum + values.length, 0);
   const intelligence = buildDatasetIntelligence(profile);
 
-  return (
-    <section className="mt-8 space-y-8">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-              Analytics workspace
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-950">{intelligence.title}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              {intelligence.description}
+  if (sectionType === "trends") {
+    return (
+      <section className="space-y-6">
+        {activeFilterCount > 0 ? (
+          <div className="rounded-2xl border border-teal-200 bg-teal-50 p-4">
+            <p className="text-sm font-medium text-teal-900">
+              Showing filtered data ({activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} applied)
             </p>
           </div>
-          {activeFilterCount > 0 ? (
-            <span className="inline-flex w-fit rounded-full bg-teal-50 px-3 py-1 text-sm font-medium text-teal-800">
-              Filters applied - dashboard is showing filtered data
-            </span>
-          ) : null}
-        </div>
+        ) : null}
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {intelligence.kpis.slice(0, 4).map((kpi) => (
-            <SummaryCard
-              accent={summaryAccent(kpi.tone)}
-              key={kpi.label}
-              label={kpi.label}
-              subtitle={kpi.subtitle}
-              value={kpi.value}
-            />
-          ))}
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-950">Time Series & Trends</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              How metrics evolve over time and across key dimensions.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {numericColumns.slice(0, 3).map((column) => (
+              <NumericChart key={column.name} column={column} />
+            ))}
+            {binaryColumns.slice(0, 1).map((column) => (
+              <BinaryRateChart key={column.name} column={column} />
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+    );
+  }
 
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-950">Important Insights</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Automatically selected for the detected {intelligence.typeLabel} dataset.
+  // Default: breakdown section
+  return (
+    <section className="space-y-6">
+      {activeFilterCount > 0 ? (
+        <div className="rounded-2xl border border-teal-200 bg-teal-50 p-4">
+          <p className="text-sm font-medium text-teal-900">
+            Showing filtered data ({activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} applied)
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {intelligence.insights.map((insight) => (
-            <InsightCard key={insight.label} {...insight} />
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <SectionHeading
-          eyebrow="Recommendations"
-          title="Recommended Charts"
-          subtitle="Suggested views based on detected fields and dataset type."
-        />
-        <div className="mt-4 flex flex-wrap gap-2">
-          {intelligence.chartRecommendations.map((chart) => (
-            <span className="rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700" key={chart}>
-              {chart}
-            </span>
-          ))}
-        </div>
-      </div>
+      ) : null}
 
       {categoricalColumns.length > 0 && (
         <div className="space-y-4">
-          <SectionHeading
-            eyebrow="Composition"
-            title="Category Breakdown"
-            subtitle="Largest category shares across the most useful low-cardinality fields."
-          />
+          <div>
+            <h3 className="text-lg font-semibold text-slate-950">Category Distribution</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              How data breaks down by key categories and segments.
+            </p>
+          </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {categoricalColumns.slice(0, 3).map((column) => (
               <CategoricalChart key={column.name} column={column} rowCount={rowCount} />
@@ -100,113 +82,33 @@ export function Dashboard({ profile, rowCount, filters = {} }: DashboardProps) {
 
       {(numericColumns.length > 0 || binaryColumns.length > 0) && (
         <div className="space-y-4">
-          <SectionHeading
-            eyebrow="Measures"
-            title="Key Numeric Measures"
-            subtitle="Core range and central tendency for the highest-signal numeric fields."
-          />
+          <div>
+            <h3 className="text-lg font-semibold text-slate-950">Key Measures</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Distribution and statistics for numeric fields.
+            </p>
+          </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {binaryColumns.slice(0, 2).map((column) => (
-              <BinaryRateChart key={column.name} column={column} />
-            ))}
             {numericColumns.slice(0, 2).map((column) => (
               <NumericChart key={column.name} column={column} />
+            ))}
+            {binaryColumns.slice(0, 2).map((column) => (
+              <BinaryRateChart key={column.name} column={column} />
             ))}
           </div>
         </div>
       )}
 
       <div className="space-y-4">
-        <SectionHeading
-          eyebrow="Completeness"
-          title="Column Completeness"
-          subtitle="Columns with missing values are highlighted first for review."
-        />
+        <div>
+          <h3 className="text-lg font-semibold text-slate-950">Data Quality</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Column completeness and missing value status.
+          </p>
+        </div>
         <DataQualityChart columns={profile.columns} rowCount={rowCount} />
       </div>
     </section>
-  );
-}
-
-function SummaryCard({
-  accent,
-  label,
-  subtitle,
-  value,
-}: {
-  accent: string;
-  label: string;
-  subtitle: string;
-  value: string;
-}) {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className={`h-1.5 bg-gradient-to-r ${accent}`} />
-      <div className="p-5">
-        <p className="text-sm font-medium text-slate-600">{label}</p>
-        <p className="mt-2 text-3xl font-semibold text-slate-950">{value}</p>
-        <p className="mt-2 text-xs font-medium uppercase tracking-wide text-slate-400">{subtitle}</p>
-      </div>
-    </div>
-  );
-}
-
-function summaryAccent(tone: "teal" | "blue" | "amber" | "rose" | "slate" = "slate") {
-  const accents = {
-    amber: "from-amber-600 to-orange-500",
-    blue: "from-blue-700 to-cyan-600",
-    rose: "from-rose-700 to-red-500",
-    slate: "from-slate-900 to-slate-700",
-    teal: "from-cyan-700 to-teal-600",
-  };
-  return accents[tone];
-}
-
-function InsightCard({
-  detail,
-  label,
-  subtitle,
-  tone = "teal",
-  value,
-}: {
-  detail?: string;
-  label: string;
-  subtitle?: string;
-  tone?: "teal" | "slate" | "amber" | "rose" | "blue";
-  value: string;
-}) {
-  const toneClasses = {
-    amber: "border-amber-200 bg-amber-50 text-amber-900",
-    blue: "border-blue-200 bg-blue-50 text-blue-900",
-    rose: "border-rose-200 bg-rose-50 text-rose-900",
-    slate: "border-slate-200 bg-slate-50 text-slate-900",
-    teal: "border-teal-200 bg-teal-50 text-teal-900",
-  };
-
-  return (
-    <div className={`rounded-2xl border p-5 shadow-sm ${toneClasses[tone]}`}>
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-70">{label}</p>
-      <p className="mt-3 text-2xl font-semibold">{value}</p>
-      <p className="mt-2 text-sm leading-6 opacity-80">{detail ?? subtitle}</p>
-    </div>
-  );
-}
-
-function SectionHeading({
-  eyebrow,
-  title,
-  subtitle,
-}: {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">{eyebrow}</p>
-      <h3 className="mt-1 text-lg font-semibold text-slate-950">{title}</h3>
-      <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
-    </div>
   );
 }
 

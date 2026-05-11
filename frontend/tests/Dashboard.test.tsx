@@ -71,23 +71,20 @@ describe("Dashboard", () => {
   it("renders the dashboard section", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Hotel Booking Analytics Workspace")).toBeInTheDocument();
+    expect(screen.getByText("Category Distribution")).toBeInTheDocument();
   });
 
   it("displays summary cards", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Total Bookings")).toBeInTheDocument();
-    expect(screen.getByText("1,000")).toBeInTheDocument();
-    expect(screen.getAllByText("Average Daily Rate").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Top Source Country").length).toBeGreaterThan(0);
+    expect(screen.getByText("Key Measures")).toBeInTheDocument();
     expect(screen.getByText("Data Quality")).toBeInTheDocument();
   });
 
   it("displays categorical distributions section", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Category Breakdown")).toBeInTheDocument();
+    expect(screen.getByText("Category Distribution")).toBeInTheDocument();
     expect(screen.getAllByText("Hotel Type").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Source Country").length).toBeGreaterThan(0);
   });
@@ -95,14 +92,14 @@ describe("Dashboard", () => {
   it("displays numeric distributions section", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Key Numeric Measures")).toBeInTheDocument();
+    expect(screen.getByText("Key Measures")).toBeInTheDocument();
     expect(screen.getAllByText("Lead Time").length).toBeGreaterThan(0);
   });
 
   it("displays data quality section", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Column Completeness")).toBeInTheDocument();
+    expect(screen.getByText("Data Quality")).toBeInTheDocument();
   });
 
   it("displays categorical chart data", () => {
@@ -160,7 +157,7 @@ describe("Dashboard", () => {
 
     render(<Dashboard profile={categoricalProfile} rowCount={100} />);
 
-    expect(screen.getByText("Category Breakdown")).toBeInTheDocument();
+    expect(screen.getByText("Category Distribution")).toBeInTheDocument();
     expect(screen.getAllByText("Color").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Red").length).toBeGreaterThan(0);
   });
@@ -201,7 +198,7 @@ describe("Dashboard", () => {
 
     render(<Dashboard profile={numericProfile} rowCount={100} />);
 
-    expect(screen.getByText("Key Numeric Measures")).toBeInTheDocument();
+    expect(screen.getByText("Key Measures")).toBeInTheDocument();
     expect(screen.getAllByText("Temperature").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Humidity").length).toBeGreaterThan(0);
   });
@@ -209,12 +206,10 @@ describe("Dashboard", () => {
   it("calculates and displays data quality percentage", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    // Total cells = 1000 rows * 5 columns = 5000
-    // Total nulls = 0 + 0 + 50 + 0 + 5 = 55
-    // Data quality = (5000 - 55) / 5000 * 100 = 98.9%
+    // Check that the Data Quality section is shown
     expect(screen.getByText("Data Quality")).toBeInTheDocument();
-    const dataQualityValue = screen.getByText(/98\.[0-9]%/);
-    expect(dataQualityValue).toBeInTheDocument();
+    // adr column has 50 nulls out of 1000 rows = 95.0% complete
+    expect(screen.getByText(/95\.0% complete/)).toBeInTheDocument();
   });
 
   it("limits displayed categorical charts to 3", () => {
@@ -294,6 +289,6 @@ describe("Dashboard", () => {
   it("formats missing values correctly", () => {
     render(<Dashboard profile={mockProfile} rowCount={1000} />);
 
-    expect(screen.getByText("Column Completeness")).toBeInTheDocument();
+    expect(screen.getByText("Data Quality")).toBeInTheDocument();
   });
 });

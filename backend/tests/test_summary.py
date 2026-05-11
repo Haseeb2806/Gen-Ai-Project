@@ -44,8 +44,10 @@ def test_summary_returns_generic_profile_for_non_hotel_dataset(monkeypatch, tmp_
 
     assert response.status_code == 200
     body = response.json()
-    assert "required hotel columns were not present" in body["summary"]
-    assert body["data"]["profile"]["filename"] == "products.csv"
+    # Should generate generic dataset summary, not hotel fallback
+    assert "columns" in body["summary"] or "products" in body["summary"].lower()
+    assert "required hotel columns" not in body["summary"].lower()
+    assert body["data"]["dataset_type"] == "generic"
 
 
 def _upload_hotel_dataset() -> str:

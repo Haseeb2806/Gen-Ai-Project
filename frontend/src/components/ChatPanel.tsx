@@ -3,14 +3,6 @@ import { FormEvent, useState } from "react";
 import { Profile, sendChatQuestion } from "../api";
 import { buildDatasetIntelligence } from "../utils/datasetIntelligence";
 
-const SUGGESTED_QUESTIONS = [
-  "What is the overall cancellation rate and how does it differ between City Hotel and Resort Hotel?",
-  "Which countries are the top 10 source markets?",
-  "How does lead time correlate with cancellation probability?",
-  "What is the average daily rate by month?",
-  "Which market segments have the highest repeat guest rates?",
-];
-
 type ChatPanelProps = {
   datasetId: string;
   profile?: Profile;
@@ -22,7 +14,7 @@ export function ChatPanel({ datasetId, profile }: ChatPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const intelligence = profile ? buildDatasetIntelligence(profile) : null;
-  const suggestedQuestions = intelligence?.suggestedQuestions ?? SUGGESTED_QUESTIONS;
+  const suggestedQuestions = intelligence?.suggestedQuestions || [];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,6 +32,7 @@ export function ChatPanel({ datasetId, profile }: ChatPanelProps) {
     try {
       const response = await sendChatQuestion(datasetId, trimmedQuestion);
       setAnswer(response.answer);
+      setQuestion("");
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Chat request failed.");
     } finally {
@@ -51,44 +44,44 @@ export function ChatPanel({ datasetId, profile }: ChatPanelProps) {
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-          Conversational analytics
+          Natural Language
         </p>
-        <h2 className="mt-1 text-lg font-semibold text-slate-950">Ask a question</h2>
+        <h2 className="mt-1 text-lg font-semibold text-slate-950">Ask a Question</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Dataset ID: <span className="font-medium text-slate-800">{datasetId}</span>
+          Query your data using natural language. The system uses deterministic tools to answer based on your dataset.
         </p>
       </div>
 
-      <div className="mt-4">
-        <h3 className="text-sm font-medium text-slate-800">
-          Suggested {intelligence?.typeLabel ?? "Hotel Booking"} questions
-        </h3>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {suggestedQuestions.map((suggestedQuestion) => (
-            <button
-              className="rounded-full border border-slate-300 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 shadow-sm hover:border-teal-600 hover:bg-teal-50"
-              key={suggestedQuestion}
-              onClick={() => {
-                setQuestion(suggestedQuestion);
-                setError(null);
-              }}
-              type="button"
-            >
-              {suggestedQuestion}
-            </button>
-          ))}
+      {suggestedQuestions.length > 0 && (
+        <div className="mt-4">
+          <h3 className="text-sm font-medium text-slate-800">Suggested {intelligence?.typeLabel || "dataset"} questions</h3>
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {suggestedQuestions.map((suggestedQuestion) => (
+              <button
+                className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 shadow-sm hover:border-teal-600 hover:bg-teal-50"
+                key={suggestedQuestion}
+                onClick={() => {
+                  setQuestion(suggestedQuestion);
+                  setError(null);
+                }}
+                type="button"
+              >
+                {suggestedQuestion}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
         <label className="block text-sm font-medium text-slate-800" htmlFor="chat-question">
-          Question
+          Your Question
         </label>
         <textarea
-          className="min-h-24 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-teal-700 focus:outline-none focus:ring-1 focus:ring-teal-700"
+          className="min-h-20 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-teal-700 focus:outline-none focus:ring-1 focus:ring-teal-700"
           id="chat-question"
           onChange={(event) => setQuestion(event.target.value)}
-          placeholder={intelligence ? `Ask about ${intelligence.typeLabel.toLowerCase()} metrics, segments, quality, or trends.` : "Ask about cancellations, source markets, lead time, ADR, or repeat guests."}
+          placeholder={intelligence ? `Ask about ${intelligence.typeLabel.toLowerCase()} data...` : "Ask about your data..."}
           value={question}
         />
         <button
@@ -96,7 +89,7 @@ export function ChatPanel({ datasetId, profile }: ChatPanelProps) {
           disabled={isSending}
           type="submit"
         >
-          {isSending ? "Sending..." : "Send question"}
+          {isSending ? "Sending..." : "Send Question"}
         </button>
       </form>
 
