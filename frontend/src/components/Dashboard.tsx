@@ -49,7 +49,7 @@ export function Dashboard({ profile, rowCount, filters = {}, sectionType = "brea
 
         <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold text-slate-950">Time Series & Trends</h3>
+            <h2 className="text-2xl font-bold text-slate-950">Time Series & Trends</h2>
             <p className="mt-1 text-sm text-slate-600">
               How metrics evolve over time and across key dimensions.
             </p>
@@ -57,7 +57,7 @@ export function Dashboard({ profile, rowCount, filters = {}, sectionType = "brea
           {timeColumns.length === 0 ? (
             <ChartFallback message="No time field was detected, so trend analysis is not available for this dataset." />
           ) : trendCharts.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               {trendCharts.map((chart) => (
                 <TrendChart key={chart.title} {...chart} />
               ))}
@@ -70,60 +70,99 @@ export function Dashboard({ profile, rowCount, filters = {}, sectionType = "brea
     );
   }
 
-  // Default: breakdown section
+  // Default: breakdown section - OPTIMIZED LAYOUT
   return (
-    <section className="space-y-6">
+    <section className="space-y-8">
       <FilterSummary
         activeFilters={activeFilters}
         filteredRowCount={filteredRowCount}
         totalRowCount={rowCount}
       />
 
+      {/* Dashboard Header Stats */}
+      <DashboardStats rowCount={filteredRowCount} dataQuality={dataQuality} profile={profile} />
+
+      {/* Category Distribution Section */}
       {categoricalColumns.length > 0 && (
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-950">Category Distribution</h3>
+          <div className="border-b border-slate-200 pb-4">
+            <h2 className="text-2xl font-bold text-slate-950">Key Dimensions</h2>
             <p className="mt-1 text-sm text-slate-600">
-              How data breaks down by key categories and segments.
+              How data breaks down by categories and segments.
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {categoricalColumns.slice(0, 3).map((column) => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {categoricalColumns.slice(0, 6).map((column) => (
               <CategoricalChart key={column.name} column={column} rowCount={filteredRowCount} filters={filters} totalRowCount={rowCount} />
             ))}
           </div>
         </div>
       )}
 
+      {/* Numeric Measures Section */}
       {(numericColumns.length > 0 || binaryColumns.length > 0) && (
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-950">Key Measures</h3>
+          <div className="border-b border-slate-200 pb-4">
+            <h2 className="text-2xl font-bold text-slate-950">Key Metrics</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Distribution and statistics for numeric fields.
+              Distribution and statistics for numeric fields and rates.
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {numericColumns.slice(0, 2).map((column) => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {numericColumns.slice(0, 4).map((column) => (
               <NumericChart key={column.name} column={column} />
             ))}
-            {binaryColumns.slice(0, 2).map((column) => (
+            {binaryColumns.slice(0, 4).map((column) => (
               <BinaryRateChart key={column.name} column={column} />
             ))}
           </div>
         </div>
       )}
 
+      {/* Data Quality Section */}
       <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-950">Data Quality</h3>
+        <div className="border-b border-slate-200 pb-4">
+          <h2 className="text-2xl font-bold text-slate-950">Data Health</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Column completeness and missing value status.
+            Column completeness and data quality overview.
           </p>
         </div>
         <DataQualityChart columns={profile.columns} rowCount={rowCount} />
       </div>
     </section>
+  );
+}
+
+function DashboardStats({
+  rowCount,
+  dataQuality,
+  profile,
+}: {
+  rowCount: number;
+  dataQuality: number;
+  profile: Profile;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 shadow-sm">
+        <p className="text-xs font-medium text-blue-600">Total Records</p>
+        <p className="mt-2 text-2xl font-bold text-blue-900">{rowCount.toLocaleString()}</p>
+      </div>
+      <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 shadow-sm">
+        <p className="text-xs font-medium text-emerald-600">Columns</p>
+        <p className="mt-2 text-2xl font-bold text-emerald-900">{profile.column_count}</p>
+      </div>
+      <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-teal-50 to-teal-100 p-4 shadow-sm">
+        <p className="text-xs font-medium text-teal-600">Data Quality</p>
+        <p className="mt-2 text-2xl font-bold text-teal-900">{dataQuality.toFixed(1)}%</p>
+      </div>
+      <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-purple-50 to-purple-100 p-4 shadow-sm">
+        <p className="text-xs font-medium text-purple-600">Missing Values</p>
+        <p className="mt-2 text-2xl font-bold text-purple-900">
+          {profile.columns.reduce((sum, col) => sum + col.null_count, 0).toLocaleString()}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -186,33 +225,28 @@ function CategoricalChart({
   const maxCount = Math.max(...chartData.map((d) => d.count), 1);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <div>
-          <h4 className="text-base font-semibold text-slate-950">{formatColumnLabel(column.name)}</h4>
-          <p className="mt-1 text-sm text-slate-500">Top values by filtered record count</p>
-        </div>
-        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-          Category
-        </span>
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="mb-4">
+        <h4 className="text-sm font-semibold text-slate-950">{formatColumnLabel(column.name)}</h4>
+        <p className="text-xs text-slate-500">Top values by count</p>
       </div>
-      {chartData.length > 0 ? <div className="space-y-3">
+      {chartData.length > 0 ? <div className="space-y-2">
         {chartData.map((item, idx) => (
           <div key={item.fullName}>
-            <div className="flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center justify-between gap-2 text-xs">
               <span className="truncate font-medium text-slate-700">{item.fullName}</span>
-              <span className="font-semibold text-slate-900">{item.count}</span>
+              <span className="font-semibold text-slate-900 whitespace-nowrap">{item.count}</span>
             </div>
-            <div className="mt-1 h-3 overflow-hidden rounded-full bg-slate-100">
+            <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-100">
               <div
                 className={`h-full rounded-full ${barColor(idx)}`}
                 style={{ width: `${Math.max((item.count / maxCount) * 100, 4)}%` }}
-                title={`${item.fullName}: ${item.count} (${item.share.toFixed(1)}%)`}
+                title={`${item.fullName}: ${item.count}`}
               />
             </div>
           </div>
         ))}
-      </div> : <p className="text-sm text-slate-500">No matching profiled values are available for the current filters.</p>}
+      </div> : <p className="text-xs text-slate-500">No data available</p>}
     </div>
   );
 }
@@ -234,20 +268,15 @@ function NumericChart({
   if (!stats) return null;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <div>
-          <h4 className="text-base font-semibold text-slate-950">{formatColumnLabel(column.name)}</h4>
-          <p className="mt-1 text-sm text-slate-500">Range and midpoint statistics</p>
-        </div>
-        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-          Numeric Indicator
-        </span>
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="mb-4">
+        <h4 className="text-sm font-semibold text-slate-950">{formatColumnLabel(column.name)}</h4>
+        <p className="mt-0.5 text-xs text-slate-500">Statistics</p>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-2">
         <StatTile label="Min" value={stats.min} />
-        <StatTile label="Median" value={stats.median} />
-        <StatTile label="Mean" value={stats.mean} />
+        <StatTile label="Med" value={stats.median} />
+        <StatTile label="Avg" value={stats.mean} />
         <StatTile label="Max" value={stats.max} />
       </div>
     </div>
@@ -269,17 +298,12 @@ function BinaryRateChart({
   const inverse = 1 - mean;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <div>
-          <h4 className="text-base font-semibold text-slate-950">{binaryRateLabel(column.name)}</h4>
-          <p className="mt-1 text-sm text-slate-500">Binary outcome summarized as a rate</p>
-        </div>
-        <span className="rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-700">
-          Rate Indicator
-        </span>
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="mb-4">
+        <h4 className="text-sm font-semibold text-slate-950">{binaryRateLabel(column.name)}</h4>
+        <p className="mt-0.5 text-xs text-slate-500">Rate</p>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-2">
         <RateBar label={binaryRateLabel(column.name)} value={mean} />
         <RateBar label={binaryInverseLabel(column.name)} value={inverse} />
       </div>
@@ -346,32 +370,32 @@ function TrendChart({ data, kind, subtitle, title }: TrendChartConfig) {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" data-testid="trend-chart">
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow" data-testid="trend-chart">
       <div className="mb-4">
-        <h4 className="text-base font-semibold text-slate-950">{title}</h4>
-        <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+        <h4 className="text-sm font-semibold text-slate-950">{title}</h4>
+        <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>
       </div>
-      <div className="h-64 w-full overflow-x-auto">
-        <div className="min-w-[520px]">
+      <div className="h-56 w-full overflow-x-auto">
+        <div className="min-w-[480px]">
           {kind === "bar" ? (
-            <BarChart data={data} height={240} width={520}>
+            <BarChart data={data} height={220} width={480}>
               <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} width={44} />
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} width={40} />
               <Tooltip />
-              <Bar dataKey="value" isAnimationActive={false} radius={[6, 6, 0, 0]}>
+              <Bar dataKey="value" isAnimationActive={false} radius={[4, 4, 0, 0]}>
                 {data.map((_, index) => (
                   <Cell fill={["#0f766e", "#2563eb", "#f59e0b", "#4f46e5"][index % 4]} key={index} />
                 ))}
               </Bar>
             </BarChart>
           ) : (
-            <LineChart data={data} height={240} width={520}>
+            <LineChart data={data} height={220} width={480}>
               <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} width={44} />
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} width={40} />
               <Tooltip />
-              <Line dataKey="value" dot={{ r: 3 }} isAnimationActive={false} stroke="#0f766e" strokeWidth={3} type="monotone" />
+              <Line dataKey="value" dot={{ r: 2 }} isAnimationActive={false} stroke="#0f766e" strokeWidth={2} type="monotone" />
             </LineChart>
           )}
         </div>
@@ -404,9 +428,9 @@ function RateBar({ label, value }: { label: string; value: number }) {
 
 function StatTile({ label, value }: { label: string; value: number | null }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
       <p className="text-xs font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-slate-950">
+      <p className="mt-1 text-base font-semibold text-slate-950">
         {value !== null ? formatNumber(value) : "-"}
       </p>
     </div>
@@ -420,22 +444,22 @@ function DataQualityChart({
   columns: Array<{ name: string; null_count: number }>;
   rowCount: number;
 }) {
-  const sortedColumns = [...columns].sort((a, b) => b.null_count - a.null_count).slice(0, 6);
+  const sortedColumns = [...columns].sort((a, b) => b.null_count - a.null_count).slice(0, 8);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="space-y-4">
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {sortedColumns.map((column) => {
           const completeness = rowCount ? ((rowCount - column.null_count) / rowCount) * 100 : 100;
           return (
-            <div key={column.name}>
-              <div className="flex justify-between gap-3 text-xs">
-                <span className="font-medium text-slate-700">{formatColumnLabel(column.name)}</span>
-                <span className="text-slate-600">{completeness.toFixed(1)}% complete</span>
+            <div key={column.name} className="rounded-lg bg-slate-50 p-3">
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-xs font-medium text-slate-700 truncate">{formatColumnLabel(column.name)}</span>
+                <span className="text-xs font-semibold text-slate-600 whitespace-nowrap">{completeness.toFixed(0)}%</span>
               </div>
-              <div className="mt-2 h-2.5 w-full rounded-full bg-slate-100">
+              <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
                 <div
-                  className={`h-2.5 rounded-full ${completeness < 95 ? "bg-amber-500" : "bg-teal-600"}`}
+                  className={`h-2 rounded-full ${completeness < 95 ? "bg-amber-500" : "bg-teal-600"}`}
                   style={{ width: `${Math.max(completeness, 2)}%` }}
                 />
               </div>
