@@ -4,9 +4,9 @@ A lightweight, full-stack web application for uploading CSV files, profiling and
 
 ## Team
 
-- **Member 1:** [Your Name]
-- **Member 2:** [Your Name]
-- **Member 3 (if applicable):** [Your Name]
+- **Member 1:** Affan Abdul Rahim Khan
+- **Member 2:** Hassaan Bin kamran
+- **Member 3:** Haseeb Ahsan
 - **Assigned Dataset:** Dataset 10 — Hotel Booking Demand
 - **Dataset File:** `data/hotel_booking.csv` (119,390 hotel booking records)
 
